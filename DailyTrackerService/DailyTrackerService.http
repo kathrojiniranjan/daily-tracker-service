@@ -1,0 +1,6 @@
+@DailyTrackerService_HostAddress = http://localhost:5226
+
+GET {{DailyTrackerService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

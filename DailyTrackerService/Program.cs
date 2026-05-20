@@ -1,8 +1,10 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using DailyTrackerService.CustomMiddleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -39,6 +41,46 @@ builder.Services
     });
 
 builder.Services.AddAuthorization();
+
+// Rate limiting — protects against abuse / brute force.
+builder.Services.AddRateLimiter(options =>
+{
+    // Returned to the client when limit is exceeded.
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, ct) =>
+    {
+        if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            status = 429,
+            title = "Too many requests",
+            detail = "Slow down and try again later."
+        }, ct);
+    };
+
+    // 1. Global limit — applies to every request unless an endpoint opts into another policy.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name
+                          ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                          ?? "anonymous",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 100,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
+    // 2. Strict policy for login — 5 attempts per minute per IP (brute-force protection).
+    options.AddFixedWindowLimiter("login", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
 
 // API versioning (URL segment style: /api/v1/..., /api/v2/...)
 builder.Services
@@ -106,6 +148,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseMiddleware<LoggingMiddleware>();
+app.UseRateLimiter();          // throttle abusive clients (after routing, before auth)
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

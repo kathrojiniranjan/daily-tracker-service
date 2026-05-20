@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DailyTrackerService.Controllers;
@@ -18,6 +19,7 @@ public class AuthController : ControllerBase
 
     // POST: api/auth/login
     [HttpPost("login")]
+    [EnableRateLimiting("login")]   // 5 attempts / minute / IP
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Demo only — hardcoded user. Replace with real user lookup later.

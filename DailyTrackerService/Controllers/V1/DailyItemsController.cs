@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using DailyTrackerService.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DailyTrackerService.Controllers.V1;
@@ -7,6 +8,7 @@ namespace DailyTrackerService.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/dailyitems")]
+[Authorize]
 public class DailyItemsController : ControllerBase
 {
     // Simple in-memory store for learning. Replace with a DB later.

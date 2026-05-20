@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using DailyTrackerService.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using V1Controller = DailyTrackerService.Controllers.V1.DailyItemsController;
 
@@ -8,6 +9,7 @@ namespace DailyTrackerService.Controllers.V2;
 [ApiController]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/dailyitems")]
+[Authorize]
 public class DailyItemsController : ControllerBase
 {
     // v2 difference: GET returns an envelope { count, items } instead of a raw array.

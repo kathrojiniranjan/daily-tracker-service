@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using DailyTrackerService.Auditing;
 using DailyTrackerService.CustomMiddleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -12,8 +13,15 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
-builder.Services.AddControllers();
+// Controllers + global audit filter
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<AuditActionFilter>();
+});
+
+// Audit logging — swap FileAuditLogger for a DB/SIEM sink in production.
+builder.Services.AddSingleton<IAuditLogger, FileAuditLogger>();
+builder.Services.AddScoped<AuditActionFilter>();
 
 // Global exception handling (RFC 7807 ProblemDetails)
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

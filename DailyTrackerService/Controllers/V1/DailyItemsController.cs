@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using DailyTrackerService.Auditing;
 using DailyTrackerService.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,6 +38,7 @@ public class DailyItemsController : ControllerBase
 
     // POST: api/v1/dailyitems
     [HttpPost]
+    [Audit("ItemCreated")]
     public ActionResult<DailyItem> PostDailyItem([FromBody] DailyItem newItem)
     {
         if (string.IsNullOrWhiteSpace(newItem.Title))
@@ -49,6 +51,7 @@ public class DailyItemsController : ControllerBase
 
     // PUT: api/v1/dailyitems/5
     [HttpPut("{id:int}")]
+    [Audit("ItemReplaced")]
     public IActionResult PutDailyItem(int id, [FromBody] DailyItem updated)
     {
         var existing = _items.FirstOrDefault(i => i.Id == id);
@@ -63,6 +66,7 @@ public class DailyItemsController : ControllerBase
 
     // PATCH: api/v1/dailyitems/5
     [HttpPatch("{id:int}")]
+    [Audit("ItemPatched")]
     public ActionResult<DailyItem> PatchDailyItem(int id, [FromBody] DailyItemPatch patch)
     {
         var existing = _items.FirstOrDefault(i => i.Id == id);

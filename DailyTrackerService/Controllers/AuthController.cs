@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using DailyTrackerService.Auditing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -20,6 +21,7 @@ public class AuthController : ControllerBase
     // POST: api/auth/login
     [HttpPost("login")]
     [EnableRateLimiting("login")]   // 5 attempts / minute / IP
+    [Audit("Login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Demo only — hardcoded user. Replace with real user lookup later.

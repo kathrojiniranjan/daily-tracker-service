@@ -1,6 +1,7 @@
 using System.Text;
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using DailyTrackerService.CustomMiddleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +12,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+
+// Global exception handling (RFC 7807 ProblemDetails)
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Authentication — JWT Bearer
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -81,6 +86,9 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// MUST be first — catches exceptions from every middleware that follows.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -101,6 +109,11 @@ app.UseMiddleware<LoggingMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+app.Map("/ping", branch =>
+{
+    branch.Run(async ctx => await ctx.Response.WriteAsync("pong"));
+});
 
 app.Run();
 

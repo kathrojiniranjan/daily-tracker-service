@@ -25,7 +25,7 @@ public class AuthController : ControllerBase
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Demo only — hardcoded user. Replace with real user lookup later.
-        if (request.Username != "admin" || request.Password != "password")
+        if (request.Username != "string" || request.Password != "string")
             return Unauthorized("Invalid username or password.");
 
         var jwt = _config.GetSection("Jwt");

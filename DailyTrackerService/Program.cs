@@ -27,6 +27,32 @@ builder.Services.AddScoped<AuditActionFilter>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+// CORS — browser-side gatekeeper. List the exact origins (scheme+host+port) of
+// the front-end apps allowed to call this API. Driven by configuration so each
+// environment (Dev / Staging / Prod) can have its own list without code change.
+const string CorsPolicy = "DefaultCors";
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? Array.Empty<string>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(CorsPolicy, policy =>
+    {
+        if (allowedOrigins.Length == 0)
+        {
+            // No origins configured -> no cross-origin browser calls allowed.
+            // (Server-to-server callers like Postman/curl are unaffected.)
+            return;
+        }
+
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+        // .AllowCredentials();  // enable ONLY if you use cookies / credentials: 'include'
+    });
+});
+
 // Authentication — JWT Bearer
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = Encoding.UTF8.GetBytes(jwtSection["Key"]!);
@@ -171,6 +197,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseMiddleware<LoggingMiddleware>();
 app.UseRateLimiter();          // throttle abusive clients (after routing, before auth)
+app.UseCors(CorsPolicy);       // MUST be before auth so OPTIONS preflight isn't 401'd
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

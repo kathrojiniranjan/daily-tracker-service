@@ -9,7 +9,7 @@ namespace DailyTrackerService.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/dailyitems")]
-[Authorize]
+[Authorize(Policy = "CanReadItems")]
 public class DailyItemsController : ControllerBase
 {
     // Simple in-memory store for learning. Replace with a DB later.
@@ -38,6 +38,7 @@ public class DailyItemsController : ControllerBase
 
     // POST: api/v1/dailyitems
     [HttpPost]
+    [Authorize(Policy = "CanWriteItems")]
     [Audit("ItemCreated")]
     public ActionResult<DailyItem> PostDailyItem([FromBody] DailyItem newItem)
     {
@@ -51,6 +52,7 @@ public class DailyItemsController : ControllerBase
 
     // PUT: api/v1/dailyitems/5
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "CanWriteItems")]
     [Audit("ItemReplaced")]
     public IActionResult PutDailyItem(int id, [FromBody] DailyItem updated)
     {
@@ -66,6 +68,7 @@ public class DailyItemsController : ControllerBase
 
     // PATCH: api/v1/dailyitems/5
     [HttpPatch("{id:int}")]
+    [Authorize(Policy = "CanWriteItems")]
     [Audit("ItemPatched")]
     public ActionResult<DailyItem> PatchDailyItem(int id, [FromBody] DailyItemPatch patch)
     {

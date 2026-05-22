@@ -9,7 +9,7 @@ namespace DailyTrackerService.Controllers.V2;
 [ApiController]
 [ApiVersion("2.0")]
 [Route("api/v{version:apiVersion}/dailyitems")]
-[Authorize]
+[Authorize(Policy = "CanReadItems")]
 public class DailyItemsController : ControllerBase
 {
     // v2 difference: GET returns an envelope { count, items } instead of a raw array.
@@ -28,6 +28,7 @@ public class DailyItemsController : ControllerBase
 
     // POST: api/v2/dailyitems
     [HttpPost]
+    [Authorize(Policy = "CanWriteItems")]
     public ActionResult<DailyItem> PostDailyItem([FromBody] DailyItem newItem)
     {
         if (string.IsNullOrWhiteSpace(newItem.Title))
@@ -40,6 +41,7 @@ public class DailyItemsController : ControllerBase
 
     // PUT: api/v2/dailyitems/5
     [HttpPut("{id:int}")]
+    [Authorize(Policy = "CanWriteItems")]
     public IActionResult PutDailyItem(int id, [FromBody] DailyItem updated)
     {
         var existing = V1Controller.Store.FirstOrDefault(i => i.Id == id);
@@ -54,6 +56,7 @@ public class DailyItemsController : ControllerBase
 
     // PATCH: api/v2/dailyitems/5
     [HttpPatch("{id:int}")]
+    [Authorize(Policy = "CanWriteItems")]
     public ActionResult<DailyItem> PatchDailyItem(int id, [FromBody] DailyItemPatch patch)
     {
         var existing = V1Controller.Store.FirstOrDefault(i => i.Id == id);

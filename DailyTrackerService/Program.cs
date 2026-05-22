@@ -48,7 +48,21 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+// Authorization policies — centralize access rules here instead of sprinkling
+// role strings across controllers. Endpoints reference policies by name:
+//   [Authorize(Policy = "CanWriteItems")]
+// To change who can write/delete later, edit ONLY this block.
+builder.Services.AddAuthorization(options =>
+{
+    // Read access: any authenticated user (Admin or User).
+    options.AddPolicy("CanReadItems",   p => p.RequireRole("Admin", "User"));
+
+    // Write access (POST / PUT / PATCH): Admin only for now.
+    options.AddPolicy("CanWriteItems",  p => p.RequireRole("Admin"));
+
+    // Delete access: Admin only (reserved for when DELETE endpoints are added).
+    options.AddPolicy("CanDeleteItems", p => p.RequireRole("Admin"));
+});
 
 // Rate limiting — protects against abuse / brute force.
 builder.Services.AddRateLimiter(options =>

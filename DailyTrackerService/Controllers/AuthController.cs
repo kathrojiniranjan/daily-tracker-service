@@ -24,8 +24,15 @@ public class AuthController : ControllerBase
     [Audit("Login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
-        // Demo only — hardcoded user. Replace with real user lookup later.
-        if (request.Username != "string" || request.Password != "string")
+        // Demo only — hardcoded users. Replace with real user lookup later.
+        // admin/password  -> role "Admin"  (can write)
+        // user/password   -> role "User"   (read only)
+        string role;
+        if (request.Username == "admin" && request.Password == "password")
+            role = "Admin";
+        else if (request.Username == "user" && request.Password == "password")
+            role = "User";
+        else
             return Unauthorized("Invalid username or password.");
 
         var jwt = _config.GetSection("Jwt");
@@ -36,7 +43,7 @@ public class AuthController : ControllerBase
         {
             new Claim(JwtRegisteredClaimNames.Sub, request.Username),
             new Claim(ClaimTypes.Name, request.Username),
-            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.Role, role),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

@@ -11,9 +11,10 @@
       "cwd": "${workspaceFolder}/DailyTrackerService",
       "stopAtEntry": false,
       "serverReadyAction": {
-        "action": "openExternally",
+        "action": "debugWithChrome",
         "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
-        "uriFormat": "%s/swagger"
+        "uriFormat": "%s/swagger",
+        "webRoot": "${workspaceFolder}/DailyTrackerService"
       },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",

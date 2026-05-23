@@ -18,6 +18,7 @@
     }
   ],
   "dotnetAcquisitionExtension.allowInvalidPaths": true,
+  "omnisharp.dotnetPath": "/usr/local/share/dotnet",
   "terminal.integrated.env.osx": {
     "DOTNET_ROOT": "/usr/local/share/dotnet",
     "PATH": "/usr/local/share/dotnet:/usr/local/bin:${env:PATH}"

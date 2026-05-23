@@ -4,8 +4,10 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using DailyTrackerService.Auditing;
 using DailyTrackerService.CustomMiddleware;
+using DailyTrackerService.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -26,6 +28,23 @@ builder.Services.AddScoped<AuditActionFilter>();
 // Global exception handling (RFC 7807 ProblemDetails)
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+// EF Core (SQLite) — scoped DbContext, one per HTTP request.
+// Connection string comes from appsettings.json -> ConnectionStrings:Default.
+var connectionString = builder.Configuration.GetConnectionString("Default")
+    ?? throw new InvalidOperationException("ConnectionStrings:Default is not configured.");
+builder.Services.AddDbContext<AppDbContext>(options =>
+{
+    options.UseSqlite(connectionString);
+
+    // Dev-only conveniences: log SQL + show parameter values in logs.
+    // Remove or guard before production — leaks PII into logs.
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
 // CORS — browser-side gatekeeper. List the exact origins (scheme+host+port) of
 // the front-end apps allowed to call this API. Driven by configuration so each
@@ -190,6 +209,10 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Seed the database before serving traffic. Runs migrations + idempotent inserts.
+// Wrapped in its own scope inside the seeder; safe to call on every startup.
+await DbSeeder.SeedAsync(app.Services);
 
 // MUST be first — catches exceptions from every middleware that follows.
 app.UseExceptionHandler();

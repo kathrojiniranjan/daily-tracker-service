@@ -90,6 +90,21 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("CanDeleteItems", p => p.RequireRole("Admin"));
 });
 
+// Health checks — three endpoints exposed below.
+//   /health/live  -> process is alive (used by Kubernetes liveness probe -> restart on fail)
+//   /health/ready -> all dependencies OK (used by readiness probe / load balancer)
+//   /health       -> full report (for humans / dashboards)
+// Tag each check so the endpoints can filter to the right subset.
+builder.Services.AddHealthChecks()
+    // Cheap liveness check: if this code runs, the process is alive.
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(),
+              tags: new[] { "live" })
+    // Placeholder readiness check. When EF Core lands, replace with:
+    //   .AddDbContextCheck<AppDbContext>(tags: new[] { "ready" })
+    .AddCheck("ready-placeholder",
+              () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("No external deps yet."),
+              tags: new[] { "ready" });
+
 // Rate limiting — protects against abuse / brute force.
 builder.Services.AddRateLimiter(options =>
 {
@@ -194,13 +209,55 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Skip HTTPS redirect in Development so Swagger UI loaded over http://localhost:5226
+// can call the API without bouncing to https://localhost:7077 (which requires a
+// trusted dev cert and the https profile to be running).
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseMiddleware<LoggingMiddleware>();
 app.UseRateLimiter();          // throttle abusive clients (after routing, before auth)
 app.UseCors(CorsPolicy);       // MUST be before auth so OPTIONS preflight isn't 401'd
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
+// Health endpoints — mapped AFTER auth middleware but they DON'T require auth
+// (infrastructure probes don't carry JWTs). Excluded from rate limiting too.
+// `predicate` filters which registered checks run for each endpoint.
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live")
+}).AllowAnonymous().DisableRateLimiting();
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+}).AllowAnonymous().DisableRateLimiting();
+
+// Full report (all checks) with a JSON response for humans / dashboards.
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var payload = new
+        {
+            status = report.Status.ToString(),
+            totalDurationMs = report.TotalDuration.TotalMilliseconds,
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description,
+                durationMs = e.Value.Duration.TotalMilliseconds,
+                tags = e.Value.Tags
+            })
+        };
+        await System.Text.Json.JsonSerializer.SerializeAsync(context.Response.Body, payload);
+    }
+}).AllowAnonymous().DisableRateLimiting();
 
 app.Map("/ping", branch =>
 {

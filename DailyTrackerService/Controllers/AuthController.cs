@@ -1,63 +1,40 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using DailyTrackerService.Auditing;
+using DailyTrackerService.Dtos.Auth;
+using DailyTrackerService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
 
 namespace DailyTrackerService.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public sealed class AuthController : ControllerBase
 {
-    private readonly IConfiguration _config;
+    private readonly IAuthService _auth;
 
-    public AuthController(IConfiguration config) => _config = config;
-
-    public record LoginRequest(string Username, string Password);
+    public AuthController(IAuthService auth) => _auth = auth;
 
     // POST: api/auth/login
     [HttpPost("login")]
-    [EnableRateLimiting("login")]   // 5 attempts / minute / IP
+    [EnableRateLimiting("login")] // 5 attempts/min/IP (configured in Program.cs)
     [Audit("Login")]
-    public IActionResult Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login(
+        [FromBody] LoginRequest request,
+        CancellationToken ct)
     {
-        // Demo only — hardcoded users. Replace with real user lookup later.
-        // admin/password  -> role "Admin"  (can write)
-        // user/password   -> role "User"   (read only)
-        string role;
-        if (request.Username == "admin" && request.Password == "password")
-            role = "Admin";
-        else if (request.Username == "user" && request.Password == "password")
-            role = "User";
-        else
-            return Unauthorized("Invalid username or password.");
+        var response = await _auth.LoginAsync(request, ct);
+        return Ok(response);
+    }
 
-        var jwt = _config.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, request.Username),
-            new Claim(ClaimTypes.Name, request.Username),
-            new Claim(ClaimTypes.Role, role),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: jwt["Issuer"],
-            audience: jwt["Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: creds);
-
-        return Ok(new
-        {
-            access_token = new JwtSecurityTokenHandler().WriteToken(token),
-            expires_in = 3600
-        });
+    // POST: api/auth/register
+    [HttpPost("register")]
+    [EnableRateLimiting("login")] // reuse the strict bucket — slows enumeration attacks
+    [Audit("Register")]
+    public async Task<ActionResult<LoginResponse>> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken ct)
+    {
+        var response = await _auth.RegisterAsync(request, ct);
+        return Ok(response);
     }
 }

@@ -4,3 +4,6 @@
 *.user
 .DS_Store
 logs/
+*.db
+*.db-shm
+*.db-wal

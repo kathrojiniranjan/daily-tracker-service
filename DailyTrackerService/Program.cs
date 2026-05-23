@@ -5,7 +5,11 @@ using Asp.Versioning.ApiExplorer;
 using DailyTrackerService.Auditing;
 using DailyTrackerService.CustomMiddleware;
 using DailyTrackerService.Data;
+using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Repositories;
+using DailyTrackerService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -45,6 +49,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         options.EnableDetailedErrors();
     }
 });
+
+// ─── Application services (Repositories → UnitOfWork → Services) ────────────
+// All Scoped: they share the per-request AppDbContext instance so a single
+// UnitOfWork.SaveChangesAsync commits changes staged across multiple repos.
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IDailyItemRepository, DailyItemRepository>();
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IDailyItemService, DailyItemService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// Stateless + thread-safe -> Singleton is appropriate.
+builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();
 
 // CORS — browser-side gatekeeper. List the exact origins (scheme+host+port) of
 // the front-end apps allowed to call this API. Driven by configuration so each

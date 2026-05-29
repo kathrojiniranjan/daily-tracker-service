@@ -7,3 +7,10 @@ logs/
 *.db
 *.db-shm
 *.db-wal
+
+# Node / Angular (client/)
+node_modules/
+dist/
+.angular/
+*.log
+.env

@@ -1,0 +1,27 @@
+<div class="login-page">
+  <div class="login-card">
+    <h1>DailyTracker</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <form class="login-form" (submit)="$event.preventDefault()">
+      <label>
+        <span>Username</span>
+        <input type="text" name="username" placeholder="e.g. admin" autocomplete="username" />
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input
+          type="password"
+          name="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+        />
+      </label>
+
+      <button type="submit" class="primary">Sign in</button>
+    </form>
+
+    <p class="register-hint">Don't have an account? <a href="#">Register</a></p>
+  </div>
+</div>

@@ -42,7 +42,13 @@
         }
       </label>
 
-      <button type="submit" class="primary" [disabled]="loginForm.invalid">Sign in</button>
+      @if (errorMessage()) {
+        <div class="form-error">{{ errorMessage() }}</div>
+      }
+
+      <button type="submit" class="primary" [disabled]="loginForm.invalid || loading()">
+        {{ loading() ? 'Signing in…' : 'Sign in' }}
+      </button>
     </form>
 
     <p class="register-hint">Don't have an account? <a routerLink="/register">Register</a></p>

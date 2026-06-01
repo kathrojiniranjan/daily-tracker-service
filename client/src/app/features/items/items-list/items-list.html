@@ -1,0 +1,16 @@
+<div class="items-page">
+  <header class="top-bar">
+    <h2>DailyTracker</h2>
+    @if (user(); as u) {
+      <div class="user-info">
+        <span>Hi, <strong>{{ u.username }}</strong> ({{ u.role }})</span>
+        <button class="logout" (click)="logout()">Logout</button>
+      </div>
+    }
+  </header>
+
+  <main class="content">
+    <h1>Items</h1>
+    <p class="muted">Coming next — list of daily items from the API.</p>
+  </main>
+</div>

@@ -12,4 +12,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/register/register').then((m) => m.Register),
   },
+  {
+    path: 'items',
+    loadComponent: () =>
+      import('./features/items/items-list/items-list').then((m) => m.ItemsList),
+  },
 ];

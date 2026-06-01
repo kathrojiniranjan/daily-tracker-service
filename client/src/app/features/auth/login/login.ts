@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -10,21 +11,35 @@ import { RouterLink } from '@angular/router';
 })
 export class Login {
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
-  // The form. Each field is a FormControl with an initial value + validators.
+  // UI state as signals — template auto-updates when these change.
+  protected readonly loading = signal(false);
+  protected readonly errorMessage = signal<string | null>(null);
+
   protected readonly loginForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  protected onSubmit(): void {
+  protected async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
-      // Mark all fields as touched so error messages appear.
       this.loginForm.markAllAsTouched();
       return;
     }
 
-    // For now, just log. API call comes later.
-    console.log('Login submitted:', this.loginForm.getRawValue());
+    this.errorMessage.set(null);
+    this.loading.set(true);
+
+    try {
+      const { username, password } = this.loginForm.getRawValue();
+      await this.auth.login(username, password);
+      await this.router.navigate(['/items']);
+    } catch (err) {
+      this.errorMessage.set(err instanceof Error ? err.message : 'Login failed.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

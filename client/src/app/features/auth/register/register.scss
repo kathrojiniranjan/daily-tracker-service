@@ -1,4 +1,4 @@
-.login-page {
+.register-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -11,8 +11,8 @@
     sans-serif;
 }
 
-.login-card {
-  width: 360px;
+.register-card {
+  width: 380px;
   padding: 32px;
   background: #ffffff;
   border-radius: 12px;
@@ -31,7 +31,7 @@
   }
 }
 
-.login-form {
+.register-form {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -88,7 +88,7 @@
   }
 }
 
-.register-hint {
+.login-hint {
   margin-top: 20px;
   text-align: center;
   font-size: 13px;

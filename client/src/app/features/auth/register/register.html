@@ -1,0 +1,90 @@
+<div class="register-page">
+  <div class="register-card">
+    <h1>DailyTracker</h1>
+    <p class="subtitle">Create your account</p>
+
+    <form class="register-form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <label>
+        <span>Username</span>
+        <input
+          type="text"
+          formControlName="username"
+          placeholder="3-50 characters"
+          autocomplete="username"
+        />
+        @if (registerForm.controls.username.touched && registerForm.controls.username.invalid) {
+          <small class="error">
+            @if (registerForm.controls.username.errors?.['required']) {
+              Username is required.
+            } @else if (registerForm.controls.username.errors?.['minlength']) {
+              At least 3 characters.
+            } @else if (registerForm.controls.username.errors?.['maxlength']) {
+              At most 50 characters.
+            }
+          </small>
+        }
+      </label>
+
+      <label>
+        <span>Email</span>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+        @if (registerForm.controls.email.touched && registerForm.controls.email.invalid) {
+          <small class="error">
+            @if (registerForm.controls.email.errors?.['required']) {
+              Email is required.
+            } @else if (registerForm.controls.email.errors?.['email']) {
+              Enter a valid email.
+            }
+          </small>
+        }
+      </label>
+
+      <label>
+        <span>Password</span>
+        <input
+          type="password"
+          formControlName="password"
+          placeholder="At least 6 characters"
+          autocomplete="new-password"
+        />
+        @if (registerForm.controls.password.touched && registerForm.controls.password.invalid) {
+          <small class="error">
+            @if (registerForm.controls.password.errors?.['required']) {
+              Password is required.
+            } @else if (registerForm.controls.password.errors?.['minlength']) {
+              At least 6 characters.
+            }
+          </small>
+        }
+      </label>
+
+      <label>
+        <span>Confirm password</span>
+        <input
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Re-enter password"
+          autocomplete="new-password"
+        />
+        @if (registerForm.controls.confirmPassword.touched && registerForm.controls.confirmPassword.errors?.['required']) {
+          <small class="error">Please confirm your password.</small>
+        } @else if (registerForm.controls.confirmPassword.touched && registerForm.errors?.['passwordsMismatch']) {
+          <small class="error">Passwords do not match.</small>
+        }
+      </label>
+
+      <button type="submit" class="primary" [disabled]="registerForm.invalid">
+        Create account
+      </button>
+    </form>
+
+    <p class="login-hint">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

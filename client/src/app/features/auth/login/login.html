@@ -3,25 +3,48 @@
     <h1>DailyTracker</h1>
     <p class="subtitle">Sign in to your account</p>
 
-    <form class="login-form" (submit)="$event.preventDefault()">
+    <form class="login-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <label>
         <span>Username</span>
-        <input type="text" name="username" placeholder="e.g. admin" autocomplete="username" />
+        <input
+          type="text"
+          formControlName="username"
+          placeholder="e.g. admin"
+          autocomplete="username"
+        />
+        @if (loginForm.controls.username.touched && loginForm.controls.username.invalid) {
+          <small class="error">
+            @if (loginForm.controls.username.errors?.['required']) {
+              Username is required.
+            } @else if (loginForm.controls.username.errors?.['minlength']) {
+              At least 3 characters.
+            }
+          </small>
+        }
       </label>
 
       <label>
         <span>Password</span>
         <input
           type="password"
-          name="password"
+          formControlName="password"
           placeholder="••••••••"
           autocomplete="current-password"
         />
+        @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+          <small class="error">
+            @if (loginForm.controls.password.errors?.['required']) {
+              Password is required.
+            } @else if (loginForm.controls.password.errors?.['minlength']) {
+              At least 6 characters.
+            }
+          </small>
+        }
       </label>
 
-      <button type="submit" class="primary">Sign in</button>
+      <button type="submit" class="primary" [disabled]="loginForm.invalid">Sign in</button>
     </form>
 
-    <p class="register-hint">Don't have an account? <a href="#">Register</a></p>
+    <p class="register-hint">Don't have an account? <a routerLink="/register">Register</a></p>
   </div>
 </div>

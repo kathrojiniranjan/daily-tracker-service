@@ -3,7 +3,9 @@
     <h2>DailyTracker</h2>
     @if (user(); as u) {
       <div class="user-info">
-        <span>Hi, <strong>{{ u.username }}</strong> ({{ u.role }})</span>
+        <span
+          >Hi, <strong>{{ u.username }}</strong> ({{ u.role }})</span
+        >
         <button class="logout" (click)="logout()">Logout</button>
       </div>
     }

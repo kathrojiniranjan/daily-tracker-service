@@ -1,42 +1,28 @@
-<div class="items-page">
-  <header class="top-bar">
-    <h2>DailyTracker</h2>
-    @if (user(); as u) {
-      <div class="user-info">
-        <span
-          >Hi, <strong>{{ u.username }}</strong> ({{ u.role }})</span
-        >
-        <button class="logout" (click)="logout()">Logout</button>
-      </div>
-    }
-  </header>
+<section class="items-section">
+  <h1>Items</h1>
 
-  <main class="content">
-    <h1>Items</h1>
-
-    @if (state().loading) {
-      <p class="muted">Loading…</p>
-    } @else if (state().error; as err) {
-      <p class="error">{{ err }}</p>
-    } @else {
-      <ul class="items">
-        @for (item of state().items; track item.id) {
-          <li class="item">
-            <span class="name">{{ item.name }}</span>
-            @if (item.unit) {
-              <span class="unit">({{ item.unit }})</span>
-            }
-            @if (item.defaultPrice !== null) {
-              <span class="price">₹{{ item.defaultPrice }}</span>
-            }
-            @if (item.isSystem) {
-              <span class="badge">system</span>
-            }
-          </li>
-        } @empty {
-          <li class="muted">No items yet.</li>
-        }
-      </ul>
-    }
-  </main>
-</div>
+  @if (state().loading) {
+    <p class="muted">Loading…</p>
+  } @else if (state().error; as err) {
+    <p class="error">{{ err }}</p>
+  } @else {
+    <ul class="items">
+      @for (item of state().items; track item.id) {
+        <li class="item">
+          <span class="name">{{ item.name }}</span>
+          @if (item.unit) {
+            <span class="unit">({{ item.unit }})</span>
+          }
+          @if (item.defaultPrice !== null) {
+            <span class="price">₹{{ item.defaultPrice }}</span>
+          }
+          @if (item.isSystem) {
+            <span class="badge">system</span>
+          }
+        </li>
+      } @empty {
+        <li class="muted">No items yet.</li>
+      }
+    </ul>
+  }
+</section>

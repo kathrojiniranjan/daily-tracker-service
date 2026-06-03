@@ -36,6 +36,19 @@ public sealed class DailyItemsController : BaseApiController
         return StatusCode(StatusCodes.Status201Created, item);
     }
 
+    // PUT: api/v1/dailyitems/5  — admin-only. Update name / unit / default price.
+    [HttpPut("{id:int}")]
+    [Authorize(Policy = "CanWriteItems")]
+    [Audit("DailyItemUpdated")]
+    public async Task<ActionResult<DailyItemResponse>> Update(
+        int id,
+        [FromBody] UpdateDailyItemRequest request,
+        CancellationToken ct)
+    {
+        var item = await _service.UpdateAsync(id, request, ct);
+        return Ok(item);
+    }
+
     // DELETE: api/v1/dailyitems/5  — admin-only. Soft-deletes a system item.
     [HttpDelete("{id:int}")]
     [Authorize(Policy = "CanDeleteItems")]

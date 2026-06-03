@@ -13,6 +13,13 @@ public interface ITransactionRepository
     Task<List<Transaction>> GetForUserAsync(Guid userId, DateOnly from, DateOnly to);
 
     /// <summary>
+    /// Admin-only: returns transactions across all users in a date range, or
+    /// for a single user when <paramref name="userId"/> is provided. Includes
+    /// User so callers can render the owner column.
+    /// </summary>
+    Task<List<Transaction>> GetForRangeAsync(Guid? userId, DateOnly from, DateOnly to);
+
+    /// <summary>
     /// Sums Amount for a user across a calendar month. Returns 0 if none.
     /// </summary>
     Task<decimal> GetMonthlyTotalAsync(Guid userId, int year, int month);

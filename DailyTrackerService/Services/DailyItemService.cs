@@ -51,4 +51,18 @@ public sealed class DailyItemService : IDailyItemService
         item.IsActive = false;
         await _uow.SaveChangesAsync(ct);
     }
+
+    public async Task<DailyItemResponse> UpdateAsync(
+        int itemId, UpdateDailyItemRequest request, CancellationToken ct = default)
+    {
+        var item = await _items.GetByIdAsync(itemId)
+            ?? throw new NotFoundException($"DailyItem {itemId} not found.");
+
+        item.Name = request.Name.Trim();
+        item.Unit = string.IsNullOrWhiteSpace(request.Unit) ? null : request.Unit.Trim();
+        item.DefaultPrice = request.DefaultPrice;
+
+        await _uow.SaveChangesAsync(ct);
+        return item.ToResponse();
+    }
 }

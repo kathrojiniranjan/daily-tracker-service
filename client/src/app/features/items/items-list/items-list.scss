@@ -123,6 +123,80 @@
         cursor: not-allowed;
       }
     }
+
+    .edit {
+      padding: 4px 10px;
+      font-size: 12px;
+      color: #1d4ed8;
+      background: transparent;
+      border: 1px solid #93c5fd;
+      border-radius: 6px;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: #eff6ff;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+
+    &.editing {
+      border-color: #93c5fd;
+      background: #f8fafc;
+    }
+
+    .edit-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      width: 100%;
+
+      input {
+        padding: 6px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+        flex: 1;
+        min-width: 120px;
+      }
+
+      input[type='number'] {
+        max-width: 110px;
+      }
+
+      .primary {
+        padding: 6px 14px;
+        background: #1d4ed8;
+        color: white;
+        border: 0;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+
+        &:disabled {
+          background: #9ca3af;
+          cursor: not-allowed;
+        }
+      }
+
+      .secondary {
+        padding: 6px 14px;
+        background: #ffffff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+
+        &:hover:not(:disabled) {
+          background: #f9fafb;
+        }
+      }
+    }
   }
 }
 

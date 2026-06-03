@@ -1,5 +1,7 @@
 export interface Transaction {
   id: string; // Guid
+  userId: string; // Guid
+  username: string | null; // populated for admin queries; null otherwise
   dailyItemId: number;
   dailyItemName: string;
   dailyItemUnit: string | null;

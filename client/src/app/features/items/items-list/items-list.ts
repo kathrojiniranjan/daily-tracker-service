@@ -5,7 +5,11 @@ import { BehaviorSubject, catchError, finalize, map, of, startWith, switchMap } 
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { DailyItemsService } from '../../../core/items/daily-items.service';
-import { DailyItem, CreateDailyItemRequest } from '../../../core/items/daily-item.models';
+import {
+  DailyItem,
+  CreateDailyItemRequest,
+  UpdateDailyItemRequest,
+} from '../../../core/items/daily-item.models';
 
 @Component({
   selector: 'app-items-list',
@@ -45,8 +49,19 @@ export class ItemsList {
   protected readonly formError = signal<string | null>(null);
   protected readonly deletingId = signal<number | null>(null);
   protected readonly deleteError = signal<string | null>(null);
+  protected readonly editingId = signal<number | null>(null);
+  protected readonly savingId = signal<number | null>(null);
+  protected readonly editError = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(128)]],
+    unit: ['', [Validators.maxLength(32)]],
+    defaultPrice: this.fb.control<number | null>(null, {
+      validators: [Validators.min(0), Validators.max(1_000_000)],
+    }),
+  });
+
+  protected readonly editForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(128)]],
     unit: ['', [Validators.maxLength(32)]],
     defaultPrice: this.fb.control<number | null>(null, {
@@ -110,6 +125,49 @@ export class ItemsList {
         next: () => this.refresh$.next(),
         error: (err) => {
           this.deleteError.set(err?.message ?? 'Failed to delete item.');
+        },
+      });
+  }
+
+  protected startEdit(item: DailyItem): void {
+    this.editError.set(null);
+    this.editingId.set(item.id);
+    this.editForm.reset({
+      name: item.name,
+      unit: item.unit ?? '',
+      defaultPrice: item.defaultPrice,
+    });
+  }
+
+  protected cancelEdit(): void {
+    this.editingId.set(null);
+    this.editError.set(null);
+  }
+
+  protected saveEdit(item: DailyItem): void {
+    if (this.editForm.invalid || this.savingId() !== null) {
+      return;
+    }
+    const v = this.editForm.getRawValue();
+    const body: UpdateDailyItemRequest = {
+      name: v.name.trim(),
+      unit: v.unit?.trim() || null,
+      defaultPrice: v.defaultPrice ?? null,
+    };
+
+    this.savingId.set(item.id);
+    this.editError.set(null);
+
+    this.itemsService
+      .update(item.id, body)
+      .pipe(finalize(() => this.savingId.set(null)))
+      .subscribe({
+        next: () => {
+          this.editingId.set(null);
+          this.refresh$.next();
+        },
+        error: (err) => {
+          this.editError.set(err?.error?.detail ?? err?.message ?? 'Failed to save item.');
         },
       });
   }

@@ -4,9 +4,10 @@
     <p class="subtitle">{{ greeting() }} — hope you're having a great day!</p>
 
     @if (isAdmin()) {
+      <h2 class="section-title">Admin overview</h2>
       @let a = adminSummary();
       <div class="cards">
-        <div class="card">
+        <a class="card clickable" routerLink="/admin/users">
           <h3>Total Users</h3>
           @if (a.loading) {
             <p class="metric placeholder">…</p>
@@ -16,9 +17,9 @@
             <p class="metric">{{ a.data.totalUsers }}</p>
             <p class="muted">registered accounts</p>
           }
-        </div>
-        <div class="card">
-          <h3>This Month</h3>
+        </a>
+        <a class="card clickable" routerLink="/transactions">
+          <h3>This Month (all users)</h3>
           <p class="muted">{{ currentMonthLabel }}</p>
           @if (a.loading) {
             <p class="metric placeholder">…</p>
@@ -28,7 +29,7 @@
               {{ a.data.totalTransactionsThisMonth }} transactions across all users
             </p>
           }
-        </div>
+        </a>
         <div class="card">
           <h3>Top Spenders</h3>
           @if (a.loading) {
@@ -48,67 +49,69 @@
           }
         </div>
       </div>
-    } @else {
-      <div class="cards">
-        <div class="card">
-          <h3>This Month</h3>
-          <p class="muted">{{ currentMonthLabel }}</p>
-          @let s = summary();
-          @if (s.loading) {
-            <p class="metric placeholder">…</p>
-          } @else if (s.error) {
-            <p class="error">{{ s.error }}</p>
-          } @else if (s.data) {
-            <p class="metric">₹{{ s.data.total | number: '1.2-2' }}</p>
-            <p class="muted">{{ s.data.transactionCount }} transactions</p>
-          }
-        </div>
-        <div class="card">
-          <h3>Recent Activity</h3>
-          @let r = recent();
-          @if (r.loading) {
-            <p class="muted">Loading…</p>
-          } @else if (r.error) {
-            <p class="error">{{ r.error }}</p>
-          } @else if (r.items.length === 0) {
-            <p class="muted">No transactions yet.</p>
-          } @else {
-            <ul class="recent">
-              @for (t of r.items; track t.id) {
-                <li>
-                  <span class="name">{{ t.dailyItemName }}</span>
-                  <span class="amt">₹{{ t.amount | number: '1.2-2' }}</span>
-                  <span class="date">{{ t.transactionDate | date: 'MMM d' }}</span>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-        <div class="card">
-          <h3>Spending Chart</h3>
-          <p class="muted">Top items — {{ currentMonthLabel }}</p>
-          @let m = monthly();
-          @if (m.loading) {
-            <p class="muted">Loading…</p>
-          } @else if (m.error) {
-            <p class="error">{{ m.error }}</p>
-          } @else if (chart().length === 0) {
-            <p class="muted">No spending this month.</p>
-          } @else {
-            <div class="chart">
-              @for (bar of chart(); track bar.name) {
-                <div class="row">
-                  <span class="label" [title]="bar.name">{{ bar.name }}</span>
-                  <div class="track">
-                    <div class="fill" [style.width.%]="bar.pct"></div>
-                  </div>
-                  <span class="value">₹{{ bar.total | number: '1.0-0' }}</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
+
+      <h2 class="section-title">Your activity</h2>
     }
+
+    <div class="cards">
+      <a class="card clickable" routerLink="/transactions">
+        <h3>This Month</h3>
+        <p class="muted">{{ currentMonthLabel }}</p>
+        @let s = summary();
+        @if (s.loading) {
+          <p class="metric placeholder">…</p>
+        } @else if (s.error) {
+          <p class="error">{{ s.error }}</p>
+        } @else if (s.data) {
+          <p class="metric">₹{{ s.data.total | number: '1.2-2' }}</p>
+          <p class="muted">{{ s.data.transactionCount }} transactions</p>
+        }
+      </a>
+      <a class="card clickable" routerLink="/transactions">
+        <h3>Recent Activity</h3>
+        @let r = recent();
+        @if (r.loading) {
+          <p class="muted">Loading…</p>
+        } @else if (r.error) {
+          <p class="error">{{ r.error }}</p>
+        } @else if (r.items.length === 0) {
+          <p class="muted">No transactions yet.</p>
+        } @else {
+          <ul class="recent">
+            @for (t of r.items; track t.id) {
+              <li>
+                <span class="name">{{ t.dailyItemName }}</span>
+                <span class="amt">₹{{ t.amount | number: '1.2-2' }}</span>
+                <span class="date">{{ t.transactionDate | date: 'MMM d' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </a>
+      <div class="card">
+        <h3>Spending Chart</h3>
+        <p class="muted">Top items — {{ currentMonthLabel }}</p>
+        @let m = monthly();
+        @if (m.loading) {
+          <p class="muted">Loading…</p>
+        } @else if (m.error) {
+          <p class="error">{{ m.error }}</p>
+        } @else if (chart().length === 0) {
+          <p class="muted">No spending this month.</p>
+        } @else {
+          <div class="chart">
+            @for (bar of chart(); track bar.name) {
+              <div class="row">
+                <span class="label" [title]="bar.name">{{ bar.name }}</span>
+                <div class="track">
+                  <div class="fill" [style.width.%]="bar.pct"></div>
+                </div>
+                <span class="value">₹{{ bar.total | number: '1.0-0' }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
   </section>
 }

@@ -15,8 +15,11 @@ export class TransactionsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/api/v1/transactions`;
 
-  getRange(from: string, to: string): Observable<Transaction[]> {
-    const params = new HttpParams().set('from', from).set('to', to);
+  getRange(from: string, to: string, userId?: string | null): Observable<Transaction[]> {
+    let params = new HttpParams().set('from', from).set('to', to);
+    if (userId) {
+      params = params.set('userId', userId);
+    }
     return this.http.get<Transaction[]>(this.baseUrl, { params });
   }
 

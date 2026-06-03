@@ -24,14 +24,19 @@ public sealed class TransactionsController : BaseApiController
         return Ok(tx);
     }
 
-    // GET: api/v1/transactions?from=2026-05-01&to=2026-05-31
+    // GET: api/v1/transactions?from=2026-05-01&to=2026-05-31&userId=...
+    // Admins see all users (optionally filtered by userId). Regular users see
+    // only their own; the userId query param is ignored for them.
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TransactionResponse>>> GetRange(
         [FromQuery] DateOnly from,
         [FromQuery] DateOnly to,
+        [FromQuery] Guid? userId,
         CancellationToken ct)
     {
-        var list = await _service.GetForRangeAsync(CurrentUserId, from, to, ct);
+        var list = IsAdmin
+            ? await _service.GetForRangeAdminAsync(userId, from, to, ct)
+            : await _service.GetForRangeAsync(CurrentUserId, from, to, ct);
         return Ok(list);
     }
 

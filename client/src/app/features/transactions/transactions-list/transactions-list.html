@@ -81,6 +81,17 @@
       <span>To</span>
       <input type="date" formControlName="to" />
     </label>
+    @if (isAdmin()) {
+      <label>
+        <span>User</span>
+        <select formControlName="userId">
+          <option value="">All users</option>
+          @for (u of users(); track u.id) {
+            <option [value]="u.id">{{ u.username }}</option>
+          }
+        </select>
+      </label>
+    }
   </form>
 
   @if (state().loading) {
@@ -101,6 +112,9 @@
           <thead>
             <tr>
               <th>Date</th>
+              @if (isAdmin()) {
+                <th>User</th>
+              }
               <th>Item</th>
               <th class="num">Qty</th>
               <th class="num">Amount</th>
@@ -110,8 +124,12 @@
           </thead>
           <tbody>
             @for (t of items; track t.id) {
+              @let isOwn = !isAdmin() || t.username === currentUsername();
               <tr [class.editing]="editingId() === t.id">
                 <td>{{ t.transactionDate }}</td>
+                @if (isAdmin()) {
+                  <td>{{ t.username }}</td>
+                }
                 <td>
                   {{ t.dailyItemName }}
                   @if (t.dailyItemUnit) {
@@ -126,7 +144,8 @@
                     type="button"
                     class="link"
                     (click)="startEdit(t)"
-                    [disabled]="editingId() === t.id || deletingId() === t.id"
+                    [disabled]="!isOwn || editingId() === t.id || deletingId() === t.id"
+                    [title]="!isOwn ? 'You can only edit your own transactions' : ''"
                   >
                     Edit
                   </button>
@@ -134,7 +153,8 @@
                     type="button"
                     class="link danger"
                     (click)="onDelete(t)"
-                    [disabled]="deletingId() === t.id"
+                    [disabled]="!isOwn || deletingId() === t.id"
+                    [title]="!isOwn ? 'You can only delete your own transactions' : ''"
                   >
                     {{ deletingId() === t.id ? 'Deleting…' : 'Delete' }}
                   </button>

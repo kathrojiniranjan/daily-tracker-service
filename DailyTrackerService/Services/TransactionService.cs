@@ -42,6 +42,16 @@ public sealed class TransactionService : ITransactionService
         return rows.Select(t => t.ToResponse()).ToList();
     }
 
+    public async Task<IReadOnlyList<TransactionResponse>> GetForRangeAdminAsync(
+        Guid? userIdFilter, DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        if (from > to)
+            throw new ValidationException("'from' date must be on or before 'to' date.");
+
+        var rows = await _transactions.GetForRangeAsync(userIdFilter, from, to);
+        return rows.Select(t => t.ToResponse()).ToList();
+    }
+
     public async Task<MonthlySummaryResponse> GetMonthlySummaryAsync(
         Guid userId, int year, int month, CancellationToken ct = default)
     {

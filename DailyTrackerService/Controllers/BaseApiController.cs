@@ -24,4 +24,6 @@ public abstract class BaseApiController : ControllerBase
             return Guid.Parse(raw);
         }
     }
+
+    protected bool IsAdmin => User.IsInRole("Admin");
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -22,6 +22,9 @@ import {
   Transaction,
   UpdateTransactionRequest,
 } from '../../../core/transactions/transaction.models';
+import { AuthService } from '../../../core/auth/auth.service';
+import { AdminService } from '../../../core/admin/admin.service';
+import { UserSummary } from '../../../core/admin/admin.models';
 
 @Component({
   selector: 'app-transactions-list',
@@ -33,9 +36,14 @@ export class TransactionsList {
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(TransactionsService);
   private readonly itemsService = inject(DailyItemsService);
+  private readonly auth = inject(AuthService);
+  private readonly admin = inject(AdminService);
 
   private readonly defaults = monthRange(new Date());
   private readonly refresh$ = new BehaviorSubject<void>(undefined);
+
+  protected readonly isAdmin = computed(() => this.auth.user()?.role === 'Admin');
+  protected readonly currentUsername = computed(() => this.auth.user()?.username ?? '');
 
   // Items dropdown — load once.
   protected readonly items = toSignal(
@@ -43,9 +51,19 @@ export class TransactionsList {
     { initialValue: [] as DailyItem[] },
   );
 
+  // Admin-only: list of users for the filter dropdown. Loaded lazily once.
+  protected readonly users = toSignal(
+    this.isAdmin()
+      ? this.admin.getUsers().pipe(catchError(() => of([] as UserSummary[])))
+      : of([] as UserSummary[]),
+    { initialValue: [] as UserSummary[] },
+  );
+
   protected readonly filterForm = this.fb.nonNullable.group({
     from: [this.defaults.from, [Validators.required]],
     to: [this.defaults.to, [Validators.required]],
+    // Empty string = "all users" (admin only). Ignored for non-admins server-side.
+    userId: [''],
   });
 
   protected readonly createForm = this.fb.nonNullable.group({
@@ -75,7 +93,7 @@ export class TransactionsList {
       this.refresh$,
     ]).pipe(
       debounceTime(250),
-      switchMap(([{ from, to }]) => {
+      switchMap(([{ from, to, userId }]) => {
         if (!from || !to || from > to) {
           return of({
             items: [] as Transaction[],
@@ -83,7 +101,7 @@ export class TransactionsList {
             error: 'Invalid date range.' as string | null,
           });
         }
-        return this.service.getRange(from, to).pipe(
+        return this.service.getRange(from, to, userId || null).pipe(
           map((items) => ({ items, loading: false, error: null as string | null })),
           catchError((err) =>
             of({

@@ -9,6 +9,13 @@ public interface ITransactionService
     Task<IReadOnlyList<TransactionResponse>> GetForRangeAsync(
         Guid userId, DateOnly from, DateOnly to, CancellationToken ct = default);
 
+    /// <summary>
+    /// Admin variant: returns transactions across all users (or one user when
+    /// <paramref name="userIdFilter"/> is set). Includes Username on each row.
+    /// </summary>
+    Task<IReadOnlyList<TransactionResponse>> GetForRangeAdminAsync(
+        Guid? userIdFilter, DateOnly from, DateOnly to, CancellationToken ct = default);
+
     Task<MonthlySummaryResponse> GetMonthlySummaryAsync(
         Guid userId, int year, int month, CancellationToken ct = default);
 

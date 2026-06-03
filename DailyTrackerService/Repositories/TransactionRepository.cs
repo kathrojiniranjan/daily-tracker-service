@@ -26,6 +26,22 @@ public sealed class TransactionRepository : ITransactionRepository
            .ThenByDescending(t => t.CreatedAt)
            .ToListAsync();
 
+    public Task<List<Transaction>> GetForRangeAsync(Guid? userId, DateOnly from, DateOnly to)
+    {
+        var q = _db.Transactions
+            .AsNoTracking()
+            .Include(t => t.DailyItem)
+            .Include(t => t.User)
+            .Where(t => t.TransactionDate >= from && t.TransactionDate <= to);
+
+        if (userId is Guid uid)
+            q = q.Where(t => t.UserId == uid);
+
+        return q.OrderByDescending(t => t.TransactionDate)
+                .ThenByDescending(t => t.CreatedAt)
+                .ToListAsync();
+    }
+
     public async Task<decimal> GetMonthlyTotalAsync(Guid userId, int year, int month)
     {
         var from = new DateOnly(year, month, 1);

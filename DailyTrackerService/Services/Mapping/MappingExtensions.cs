@@ -16,6 +16,9 @@ internal static class MappingExtensions
     public static TransactionResponse ToResponse(this Transaction t) =>
         new(
             t.Id,
+            t.UserId,
+            // User is only Include()d on admin queries; null for per-user fetches.
+            t.User?.Username,
             t.DailyItemId,
             // DailyItem is expected to be Include()d by the repo before mapping.
             t.DailyItem?.Name ?? string.Empty,

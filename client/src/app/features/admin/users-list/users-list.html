@@ -77,7 +77,12 @@
               <td class="num">{{ u.transactionCount }}</td>
               <td>{{ u.createdAt | date: 'mediumDate' }}</td>
               <td class="actions">
-                <button type="button" class="link" (click)="openRole(u)" [disabled]="isBusy">
+                <button
+                  type="button"
+                  class="link"
+                  (click)="openRole(u)"
+                  [disabled]="isBusy || isSelf"
+                >
                   Role
                 </button>
                 <button type="button" class="link" (click)="openPassword(u)" [disabled]="isBusy">
@@ -102,7 +107,9 @@
                     @if (mode() === 'role') {
                       <form [formGroup]="roleForm" (ngSubmit)="submitRole(u)">
                         <label>
-                          <span>New role for <strong>{{ u.username }}</strong></span>
+                          <span
+                            >New role for <strong>{{ u.username }}</strong></span
+                          >
                           <select formControlName="role">
                             <option value="User">User</option>
                             <option value="Admin">Admin</option>

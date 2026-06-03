@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { catchError, map, of, startWith } from 'rxjs';
 
 import { AuthService } from '../../core/auth/auth.service';
@@ -42,7 +43,7 @@ interface AdminState {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -88,7 +89,7 @@ export class Home {
     this.transactions.getRange(this.rangeFrom(), this.toIsoDate(this.now)).pipe(
       map(
         (items): RecentState => ({
-          items: [...items]
+          items: this.onlyMine(items)
             .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate))
             .slice(0, 5),
           loading: false,
@@ -109,7 +110,7 @@ export class Home {
 
   protected readonly monthly = toSignal<MonthlyState>(
     this.transactions.getRange(this.monthStart(), this.toIsoDate(this.now)).pipe(
-      map((items): MonthlyState => ({ items, loading: false, error: null })),
+      map((items): MonthlyState => ({ items: this.onlyMine(items), loading: false, error: null })),
       catchError((err: { error?: { message?: string } }) =>
         of<MonthlyState>({
           items: [],
@@ -159,6 +160,15 @@ export class Home {
 
   private monthStart(): string {
     return this.toIsoDate(new Date(this.now.getFullYear(), this.now.getMonth(), 1));
+  }
+
+  // Admin's GET /transactions returns every user's rows. The personal cards
+  // (recent activity, chart) should only show the admin's own — filter by
+  // the username we already get back. Non-admins get unfiltered = their own.
+  private onlyMine(items: readonly Transaction[]): Transaction[] {
+    if (!this.isAdmin()) return [...items];
+    const me = this.user()?.username;
+    return items.filter((t) => t.username === me);
   }
 
   private rangeFrom(): string {

@@ -11,3 +11,9 @@ export interface CreateDailyItemRequest {
   unit?: string | null;
   defaultPrice?: number | null;
 }
+
+export interface UpdateDailyItemRequest {
+  name: string;
+  unit?: string | null;
+  defaultPrice?: number | null;
+}

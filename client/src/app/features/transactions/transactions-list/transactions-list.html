@@ -1,0 +1,94 @@
+<section class="transactions-section">
+  <h1>Transactions</h1>
+
+  <form class="create-form" [formGroup]="createForm" (ngSubmit)="onSubmit()">
+    <label>
+      <span>Item</span>
+      <select formControlName="dailyItemId">
+        <option [ngValue]="null" disabled>Select item…</option>
+        @for (it of items(); track it.id) {
+          <option [ngValue]="it.id">
+            {{ it.name }}@if (it.unit) { <span> ({{ it.unit }})</span> }
+          </option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Quantity</span>
+      <input type="number" formControlName="quantity" step="0.01" min="0" placeholder="0" />
+    </label>
+    <label>
+      <span>Amount (₹)</span>
+      <input type="number" formControlName="amount" step="0.01" min="0" placeholder="0.00" />
+    </label>
+    <label>
+      <span>Date</span>
+      <input type="date" formControlName="transactionDate" />
+    </label>
+    <label class="notes-field">
+      <span>Notes</span>
+      <input type="text" formControlName="notes" placeholder="Optional" maxlength="500" />
+    </label>
+    <button type="submit" class="primary" [disabled]="createForm.invalid || submitting()">
+      {{ submitting() ? 'Adding…' : 'Add transaction' }}
+    </button>
+  </form>
+
+  @if (formError(); as err) {
+    <p class="error">{{ err }}</p>
+  }
+
+  <form class="filter-form" [formGroup]="filterForm">
+    <label>
+      <span>From</span>
+      <input type="date" formControlName="from" />
+    </label>
+    <label>
+      <span>To</span>
+      <input type="date" formControlName="to" />
+    </label>
+  </form>
+
+  @if (state().loading) {
+    <p class="muted">Loading…</p>
+  } @else if (state().error; as err) {
+    <p class="error">{{ err }}</p>
+  } @else {
+    @let items = state().items;
+    @if (items.length === 0) {
+      <p class="muted">No transactions in this range.</p>
+    } @else {
+      <p class="summary">
+        <strong>{{ items.length }}</strong> transaction(s) — total
+        <strong>₹{{ total(items) | number: '1.2-2' }}</strong>
+      </p>
+      <table class="tx-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th class="num">Qty</th>
+            <th class="num">Amount</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of items; track t.id) {
+            <tr>
+              <td>{{ t.transactionDate }}</td>
+              <td>
+                {{ t.dailyItemName }}
+                @if (t.dailyItemUnit) {
+                  <span class="unit">({{ t.dailyItemUnit }})</span>
+                }
+              </td>
+              <td class="num">{{ t.quantity }}</td>
+              <td class="num">₹{{ t.amount | number: '1.2-2' }}</td>
+              <td class="notes">{{ t.notes }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</section>

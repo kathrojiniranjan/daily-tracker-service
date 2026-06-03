@@ -17,6 +17,8 @@
   border-bottom: 1px solid #1e3a8a;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
   color: #ffffff;
+  flex-wrap: wrap;
+  row-gap: 8px;
 
   .brand {
     display: inline-flex;
@@ -26,9 +28,13 @@
     color: #ffffff;
 
     .logo {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       display: block;
+      border-radius: 6px;
+      object-fit: contain;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 2px;
       filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
     }
 
@@ -46,6 +52,7 @@
   .nav {
     display: flex;
     gap: 16px;
+    flex-wrap: wrap;
 
     a {
       text-decoration: none;
@@ -97,4 +104,45 @@
 
 .content {
   padding: 32px 24px;
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    gap: 12px;
+    padding: 10px 14px;
+
+    .brand .brand-text {
+      font-size: 16px;
+    }
+
+    .nav {
+      order: 3;
+      width: 100%;
+      gap: 6px;
+      justify-content: space-around;
+
+      a {
+        font-size: 13px;
+        padding: 6px 8px;
+      }
+    }
+
+    .user-info {
+      gap: 8px;
+      font-size: 13px;
+
+      .role-tag {
+        display: none; // hide "(Role)" on phones to save space
+      }
+
+      .logout {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+    }
+  }
+
+  .content {
+    padding: 16px 14px;
+  }
 }

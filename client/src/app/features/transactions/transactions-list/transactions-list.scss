@@ -123,7 +123,6 @@
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     overflow: hidden;
-
     th,
     td {
       padding: 10px 12px;
@@ -184,6 +183,53 @@
 
     tbody tr.editing {
       background: #eff6ff;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .transactions-section {
+    .create-form,
+    .filter-form {
+      gap: 8px;
+      padding: 10px;
+
+      label {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+
+        input,
+        select {
+          min-width: 0;
+          width: 100%;
+        }
+      }
+
+      .notes-field {
+        flex: 1 1 100%;
+      }
+
+      .primary,
+      .secondary {
+        flex: 1 1 calc(50% - 4px);
+      }
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -14px; // bleed to screen edges so scroll feels natural
+      padding: 0 14px;
+    }
+
+    .tx-table {
+      min-width: 640px; // force horizontal scroll instead of squishing columns
+      font-size: 13px;
+
+      th,
+      td {
+        padding: 8px 10px;
+      }
     }
   }
 }

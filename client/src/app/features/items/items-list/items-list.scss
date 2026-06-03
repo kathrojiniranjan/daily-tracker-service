@@ -125,3 +125,40 @@
     }
   }
 }
+
+@media (max-width: 640px) {
+  .items-section {
+    .create-form {
+      gap: 6px;
+
+      input,
+      input[type='number'] {
+        flex: 1 1 calc(50% - 3px);
+        min-width: 0;
+        max-width: none;
+      }
+
+      .primary {
+        flex: 1 1 100%;
+      }
+    }
+
+    .item {
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .left {
+        flex: 1 1 100%;
+      }
+
+      .right {
+        flex: 1 1 100%;
+        justify-content: space-between;
+      }
+
+      .unit {
+        margin-right: 0;
+      }
+    }
+  }
+}

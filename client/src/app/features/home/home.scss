@@ -8,7 +8,6 @@
     font-size: 24px;
     color: #111827;
   }
-
   .subtitle {
     margin: 0 0 24px;
     color: #6b7280;
@@ -134,6 +133,29 @@
           font-weight: 600;
           text-align: right;
         }
+      }
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .home {
+    padding: 12px 4px;
+
+    h1 {
+      font-size: 20px;
+    }
+
+    .card {
+      padding: 14px;
+
+      .metric {
+        font-size: 24px;
+      }
+
+      .chart .row {
+        grid-template-columns: 70px 1fr 56px;
+        font-size: 11px;
       }
     }
   }

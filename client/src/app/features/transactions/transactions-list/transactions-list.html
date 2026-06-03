@@ -96,52 +96,54 @@
         <strong>{{ items.length }}</strong> transaction(s) — total
         <strong>₹{{ total(items) | number: '1.2-2' }}</strong>
       </p>
-      <table class="tx-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Item</th>
-            <th class="num">Qty</th>
-            <th class="num">Amount</th>
-            <th>Notes</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (t of items; track t.id) {
-            <tr [class.editing]="editingId() === t.id">
-              <td>{{ t.transactionDate }}</td>
-              <td>
-                {{ t.dailyItemName }}
-                @if (t.dailyItemUnit) {
-                  <span class="unit">({{ t.dailyItemUnit }})</span>
-                }
-              </td>
-              <td class="num">{{ t.quantity }}</td>
-              <td class="num">₹{{ t.amount | number: '1.2-2' }}</td>
-              <td class="notes">{{ t.notes }}</td>
-              <td>
-                <button
-                  type="button"
-                  class="link"
-                  (click)="startEdit(t)"
-                  [disabled]="editingId() === t.id || deletingId() === t.id"
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  class="link danger"
-                  (click)="onDelete(t)"
-                  [disabled]="deletingId() === t.id"
-                >
-                  {{ deletingId() === t.id ? 'Deleting…' : 'Delete' }}
-                </button>
-              </td>
+      <div class="table-scroll">
+        <table class="tx-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Item</th>
+              <th class="num">Qty</th>
+              <th class="num">Amount</th>
+              <th>Notes</th>
+              <th></th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            @for (t of items; track t.id) {
+              <tr [class.editing]="editingId() === t.id">
+                <td>{{ t.transactionDate }}</td>
+                <td>
+                  {{ t.dailyItemName }}
+                  @if (t.dailyItemUnit) {
+                    <span class="unit">({{ t.dailyItemUnit }})</span>
+                  }
+                </td>
+                <td class="num">{{ t.quantity }}</td>
+                <td class="num">₹{{ t.amount | number: '1.2-2' }}</td>
+                <td class="notes">{{ t.notes }}</td>
+                <td>
+                  <button
+                    type="button"
+                    class="link"
+                    (click)="startEdit(t)"
+                    [disabled]="editingId() === t.id || deletingId() === t.id"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="link danger"
+                    (click)="onDelete(t)"
+                    [disabled]="deletingId() === t.id"
+                  >
+                    {{ deletingId() === t.id ? 'Deleting…' : 'Delete' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   }
 </section>

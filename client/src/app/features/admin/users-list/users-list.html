@@ -1,0 +1,156 @@
+<section class="users-section">
+  <header class="page-header">
+    <svg
+      class="page-icon"
+      viewBox="0 0 32 32"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="usersGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#3b82f6" />
+          <stop offset="100%" stop-color="#1d4ed8" />
+        </linearGradient>
+      </defs>
+      <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#usersGrad)" />
+      <circle cx="12" cy="13" r="3.2" fill="#ffffff" />
+      <path
+        d="M6 24c0-3.3 2.7-6 6-6s6 2.7 6 6"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="2.2"
+        stroke-linecap="round"
+      />
+      <circle cx="21" cy="14" r="2.5" fill="#ffffff" />
+      <path
+        d="M18 24c0-2.5 2-4.5 4.5-4.5S27 21.5 27 24"
+        fill="none"
+        stroke="#ffffff"
+        stroke-width="2"
+        stroke-linecap="round"
+      />
+    </svg>
+    <h1>Users</h1>
+  </header>
+
+  @let s = state();
+  @if (s.loading) {
+    <p class="muted">Loading users…</p>
+  } @else if (s.error) {
+    <p class="error">{{ s.error }}</p>
+  } @else if (s.items.length === 0) {
+    <p class="muted">No users found.</p>
+  } @else {
+    <p class="summary">
+      <strong>{{ s.items.length }}</strong> user(s) — total
+      <strong>{{ totalTransactions() | number: '1.0-0' }}</strong> transactions
+    </p>
+
+    <div class="table-scroll">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th class="num">Transactions</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of s.items; track u.id) {
+            @let isOpen = openId() === u.id;
+            @let isBusy = busyId() === u.id;
+            @let isSelf = currentUsername() === u.username;
+            <tr [class.open]="isOpen">
+              <td class="username">
+                {{ u.username }}
+                @if (isSelf) {
+                  <span class="self-tag">you</span>
+                }
+              </td>
+              <td class="email">{{ u.email }}</td>
+              <td>
+                <span class="role-pill" [class.admin]="u.role === 'Admin'">{{ u.role }}</span>
+              </td>
+              <td class="num">{{ u.transactionCount }}</td>
+              <td>{{ u.createdAt | date: 'mediumDate' }}</td>
+              <td class="actions">
+                <button type="button" class="link" (click)="openRole(u)" [disabled]="isBusy">
+                  Role
+                </button>
+                <button type="button" class="link" (click)="openPassword(u)" [disabled]="isBusy">
+                  Password
+                </button>
+                <button
+                  type="button"
+                  class="link danger"
+                  (click)="deleteUser(u)"
+                  [disabled]="isBusy || isSelf"
+                  [title]="isSelf ? 'You cannot delete your own account' : ''"
+                >
+                  {{ isBusy ? 'Working…' : 'Delete' }}
+                </button>
+              </td>
+            </tr>
+
+            @if (isOpen) {
+              <tr class="panel-row">
+                <td colspan="6">
+                  <div class="panel">
+                    @if (mode() === 'role') {
+                      <form [formGroup]="roleForm" (ngSubmit)="submitRole(u)">
+                        <label>
+                          <span>New role for <strong>{{ u.username }}</strong></span>
+                          <select formControlName="role">
+                            <option value="User">User</option>
+                            <option value="Admin">Admin</option>
+                          </select>
+                        </label>
+                        <button type="submit" class="primary" [disabled]="isBusy">
+                          {{ isBusy ? 'Saving…' : 'Save' }}
+                        </button>
+                        <button type="button" class="secondary" (click)="closePanel()">
+                          Cancel
+                        </button>
+                      </form>
+                    } @else if (mode() === 'password') {
+                      <form [formGroup]="passwordForm" (ngSubmit)="submitPassword(u)">
+                        <label>
+                          <span
+                            >New password for <strong>{{ u.username }}</strong> (min 8 chars)</span
+                          >
+                          <input
+                            type="password"
+                            formControlName="newPassword"
+                            autocomplete="new-password"
+                            placeholder="••••••••"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          class="primary"
+                          [disabled]="isBusy || passwordForm.invalid"
+                        >
+                          {{ isBusy ? 'Saving…' : 'Set Password' }}
+                        </button>
+                        <button type="button" class="secondary" (click)="closePanel()">
+                          Cancel
+                        </button>
+                      </form>
+                    }
+
+                    @if (rowError(); as err) {
+                      <p class="error panel-error">{{ err }}</p>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

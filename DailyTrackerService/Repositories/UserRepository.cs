@@ -1,5 +1,6 @@
 using DailyTrackerService.Data;
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Admin;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyTrackerService.Repositories;
@@ -27,4 +28,22 @@ public sealed class UserRepository : IUserRepository
 
     public Task<int> CountAsync() =>
         _db.Users.CountAsync();
+
+    public async Task<IReadOnlyList<UserSummaryResponse>> GetAllSummariesAsync()
+    {
+        // Project straight into the DTO so EF only SELECTs the columns we need.
+        // u.Transactions.Count() becomes a correlated sub-query in SQL.
+        var rows = await _db.Users
+            .OrderBy(u => u.Username)
+            .Select(u => new UserSummaryResponse(
+                u.Id,
+                u.Username,
+                u.Email,
+                u.Role.Name,
+                u.CreatedAt,
+                u.Transactions.Count()))
+            .ToListAsync();
+
+        return rows;
+    }
 }

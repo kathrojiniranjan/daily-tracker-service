@@ -9,6 +9,9 @@
       <a routerLink="/home" routerLinkActive="active">Home</a>
       <a routerLink="/items" routerLinkActive="active">Items</a>
       <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
+      @if (isAdmin()) {
+        <a routerLink="/admin/users" routerLinkActive="active">Users</a>
+      }
     </nav>
 
     @if (user(); as u) {

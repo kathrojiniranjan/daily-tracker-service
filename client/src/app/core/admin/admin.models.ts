@@ -9,3 +9,12 @@ export interface AdminSummary {
   totalAmountThisMonth: number;
   topSpenders: TopSpender[];
 }
+
+export interface UserSummary {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  transactionCount: number;
+}

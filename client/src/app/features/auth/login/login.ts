@@ -18,11 +18,16 @@ export class Login {
   // UI state as signals — template auto-updates when these change.
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly showForgotHint = signal(false);
 
   protected readonly loginForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
+
+  protected toggleForgotHint(): void {
+    this.showForgotHint.update((v) => !v);
+  }
 
   protected async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {

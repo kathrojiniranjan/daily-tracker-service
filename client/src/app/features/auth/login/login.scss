@@ -96,6 +96,34 @@
   }
 }
 
+.forgot {
+  margin-top: 4px;
+  text-align: center;
+
+  .link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #2563eb;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .hint {
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+}
+
 .register-hint {
   margin-top: 20px;
   text-align: center;

@@ -54,6 +54,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // All Scoped: they share the per-request AppDbContext instance so a single
 // UnitOfWork.SaveChangesAsync commits changes staged across multiple repos.
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IDailyItemRepository, DailyItemRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -61,6 +62,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDailyItemService, DailyItemService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 // Stateless + thread-safe -> Singleton is appropriate.
 builder.Services.AddSingleton<IPasswordHasher<User>, PasswordHasher<User>>();

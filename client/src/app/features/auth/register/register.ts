@@ -46,7 +46,7 @@ export class Register {
     try {
       const { username, email, password } = this.registerForm.getRawValue();
       await this.auth.register(username, email, password);
-      await this.router.navigate(['/items']);
+      await this.router.navigate(['/home']);
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Registration failed.');
     } finally {

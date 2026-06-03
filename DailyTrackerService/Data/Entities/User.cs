@@ -14,8 +14,9 @@ public class User
 
     public string PasswordHash { get; set; } = null!;
 
-    // "Admin" or "User" — matches the authorization policies in Program.cs.
-    public string Role { get; set; } = "User";
+    // FK -> Roles.Id. Use the Role nav property to read the name (e.g. "Admin").
+    public int RoleId { get; set; }
+    public Role Role { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

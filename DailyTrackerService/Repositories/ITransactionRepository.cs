@@ -20,4 +20,15 @@ public interface ITransactionRepository
     Task AddAsync(Transaction transaction);
 
     void Remove(Transaction transaction);
+
+    /// <summary>
+    /// Aggregates across all users in a date range. Admin-only callers.
+    /// </summary>
+    Task<(int Count, decimal Total)> GetAllStatsAsync(DateOnly from, DateOnly to);
+
+    /// <summary>
+    /// Top N users by total spend in a date range. Returns username + total.
+    /// </summary>
+    Task<List<(string Username, decimal Total)>> GetTopSpendersAsync(
+        DateOnly from, DateOnly to, int topN);
 }

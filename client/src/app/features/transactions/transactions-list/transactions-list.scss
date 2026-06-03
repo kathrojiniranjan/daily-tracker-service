@@ -66,6 +66,21 @@
         cursor: not-allowed;
       }
     }
+
+    .secondary {
+      padding: 8px 16px;
+      background: transparent;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      height: 32px;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
   }
 
   .filter-form {
@@ -141,6 +156,34 @@
 
     .notes {
       color: #6b7280;
+    }
+
+    .link {
+      background: none;
+      border: 0;
+      color: #1d4ed8;
+      cursor: pointer;
+      padding: 0;
+      font-size: 13px;
+      margin-right: 12px;
+
+      &:hover:not(:disabled) {
+        text-decoration: underline;
+      }
+
+      &:disabled {
+        color: #9ca3af;
+        cursor: not-allowed;
+      }
+
+      &.danger {
+        color: #b91c1c;
+        margin-right: 0;
+      }
+    }
+
+    tbody tr.editing {
+      background: #eff6ff;
     }
   }
 }

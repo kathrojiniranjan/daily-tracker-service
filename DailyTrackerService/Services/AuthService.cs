@@ -13,19 +13,23 @@ namespace DailyTrackerService.Services;
 public sealed class AuthService : IAuthService
 {
     private const int TokenLifetimeHours = 1;
+    private const string DefaultRoleName = "User";
 
     private readonly IUserRepository _users;
+    private readonly IRoleRepository _roles;
     private readonly IUnitOfWork _uow;
     private readonly IConfiguration _config;
     private readonly IPasswordHasher<User> _hasher;
 
     public AuthService(
         IUserRepository users,
+        IRoleRepository roles,
         IUnitOfWork uow,
         IConfiguration config,
         IPasswordHasher<User> hasher)
     {
         _users = users;
+        _roles = roles;
         _uow = uow;
         _config = config;
         _hasher = hasher;
@@ -59,11 +63,16 @@ public sealed class AuthService : IAuthService
         if (await _users.EmailExistsAsync(request.Email))
             throw new ConflictException("Email is already registered.");
 
+        var defaultRole = await _roles.GetByNameAsync(DefaultRoleName)
+            ?? throw new InvalidOperationException(
+                $"Required role '{DefaultRoleName}' is missing. Run the seeder.");
+
         var user = new User
         {
             Username = request.Username.Trim(),
             Email = request.Email.Trim().ToLowerInvariant(),
-            Role = "User", // self-registration never grants Admin
+            RoleId = defaultRole.Id, // self-registration never grants Admin
+            Role = defaultRole,      // attach so BuildLoginResponse can read Name without reload
         };
         user.PasswordHash = _hasher.HashPassword(user, request.Password);
 
@@ -88,7 +97,7 @@ public sealed class AuthService : IAuthService
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role),
+            new Claim(ClaimTypes.Role, user.Role.Name),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
@@ -100,6 +109,6 @@ public sealed class AuthService : IAuthService
             signingCredentials: creds);
 
         var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
-        return new LoginResponse(accessToken, expires, user.Username, user.Role);
+        return new LoginResponse(accessToken, expires, user.Username, user.Role.Name);
     }
 }

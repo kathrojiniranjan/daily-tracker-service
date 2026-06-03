@@ -46,4 +46,31 @@ public sealed class TransactionRepository : ITransactionRepository
 
     public void Remove(Transaction transaction) =>
         _db.Transactions.Remove(transaction);
+
+    public async Task<(int Count, decimal Total)> GetAllStatsAsync(DateOnly from, DateOnly to)
+    {
+        var query = _db.Transactions
+            .Where(t => t.TransactionDate >= from && t.TransactionDate <= to);
+
+        var count = await query.CountAsync();
+        var total = await query.SumAsync(t => (decimal?)t.Amount) ?? 0m;
+        return (count, total);
+    }
+
+    public async Task<List<(string Username, decimal Total)>> GetTopSpendersAsync(
+        DateOnly from, DateOnly to, int topN)
+    {
+        // SQLite cannot ORDER BY decimal — group server-side, then sort/take in memory.
+        var grouped = await _db.Transactions
+            .Where(t => t.TransactionDate >= from && t.TransactionDate <= to)
+            .GroupBy(t => t.User!.Username)
+            .Select(g => new { Username = g.Key, Total = g.Sum(t => t.Amount) })
+            .ToListAsync();
+
+        return grouped
+            .OrderByDescending(x => x.Total)
+            .Take(topN)
+            .Select(r => (r.Username, r.Total))
+            .ToList();
+    }
 }

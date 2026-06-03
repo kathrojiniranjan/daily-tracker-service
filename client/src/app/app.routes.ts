@@ -4,7 +4,7 @@ import { authGuard } from './core/auth/auth.guard';
 import { guestGuard } from './core/auth/guest.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'items', pathMatch: 'full' },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: 'login',
     canActivate: [guestGuard],
@@ -20,6 +20,10 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./layout/shell').then((m) => m.Shell),
     children: [
+      {
+        path: 'home',
+        loadComponent: () => import('./features/home/home').then((m) => m.Home),
+      },
       {
         path: 'items',
         loadComponent: () =>

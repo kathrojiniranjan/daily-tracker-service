@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
 
     // One DbSet = one table. Names become table names by convention.
     public DbSet<User> Users => Set<User>();
+    public DbSet<Role> Roles => Set<Role>();
     public DbSet<DailyItem> DailyItems => Set<DailyItem>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
 
@@ -20,17 +21,30 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // ─── Roles ────────────────────────────────────────────────────────────
+        modelBuilder.Entity<Role>(e =>
+        {
+            e.Property(r => r.Name).HasMaxLength(32).IsRequired();
+            e.HasIndex(r => r.Name).IsUnique();
+        });
+
         // ─── Users ────────────────────────────────────────────────────────────
         modelBuilder.Entity<User>(e =>
         {
             e.Property(u => u.Username).HasMaxLength(64).IsRequired();
             e.Property(u => u.Email).HasMaxLength(256).IsRequired();
             e.Property(u => u.PasswordHash).HasMaxLength(512).IsRequired();
-            e.Property(u => u.Role).HasMaxLength(32).IsRequired();
 
             // Unique + indexed -> no duplicates, fast lookup at login.
             e.HasIndex(u => u.Username).IsUnique();
             e.HasIndex(u => u.Email).IsUnique();
+
+            // Every user must have a role; don't allow deleting a role
+            // that still has users (Restrict).
+            e.HasOne(u => u.Role)
+             .WithMany(r => r.Users)
+             .HasForeignKey(u => u.RoleId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         // ─── DailyItems (catalog) ─────────────────────────────────────────────

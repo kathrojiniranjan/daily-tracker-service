@@ -24,27 +24,25 @@ public sealed class DailyItemsController : BaseApiController
         return Ok(items);
     }
 
-    // POST: api/v1/dailyitems  — creates a custom item owned by the current user.
-    // Note: this is NOT [Authorize(Policy = "CanWriteItems")] (admin-only) —
-    // any authenticated user can add their own items. Admin-only policies guard
-    // operations that mutate shared/system data.
+    // POST: api/v1/dailyitems  — admin-only. Creates a system item visible to all users.
     [HttpPost]
-    [Audit("CustomItemCreated")]
+    [Authorize(Policy = "CanWriteItems")]
+    [Audit("DailyItemCreated")]
     public async Task<ActionResult<DailyItemResponse>> Create(
         [FromBody] CreateDailyItemRequest request,
         CancellationToken ct)
     {
-        var item = await _service.CreateCustomAsync(CurrentUserId, request, ct);
-        // No GetById endpoint yet — return 201 with the resource and no Location.
+        var item = await _service.CreateAsync(request, ct);
         return StatusCode(StatusCodes.Status201Created, item);
     }
 
-    // DELETE: api/v1/dailyitems/5  — soft-delete the user's own custom item.
+    // DELETE: api/v1/dailyitems/5  — admin-only. Soft-deletes a system item.
     [HttpDelete("{id:int}")]
-    [Audit("CustomItemDeleted")]
+    [Authorize(Policy = "CanDeleteItems")]
+    [Audit("DailyItemDeleted")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
-        await _service.DeleteCustomAsync(CurrentUserId, id, ct);
+        await _service.DeleteAsync(id, ct);
         return NoContent();
     }
 }

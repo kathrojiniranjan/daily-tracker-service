@@ -24,16 +24,16 @@ public sealed class DailyItemService : IDailyItemService
         return entities.Select(i => i.ToResponse()).ToList();
     }
 
-    public async Task<DailyItemResponse> CreateCustomAsync(
-        Guid userId, CreateDailyItemRequest request, CancellationToken ct = default)
+    public async Task<DailyItemResponse> CreateAsync(
+        CreateDailyItemRequest request, CancellationToken ct = default)
     {
         var item = new DailyItem
         {
             Name = request.Name.Trim(),
             Unit = string.IsNullOrWhiteSpace(request.Unit) ? null : request.Unit.Trim(),
             DefaultPrice = request.DefaultPrice,
-            IsSystem = false,             // user-created items are NEVER system items
-            OwnerUserId = userId,
+            IsSystem = true,
+            OwnerUserId = null,
             IsActive = true,
         };
 
@@ -42,17 +42,10 @@ public sealed class DailyItemService : IDailyItemService
         return item.ToResponse();
     }
 
-    public async Task DeleteCustomAsync(Guid userId, int itemId, CancellationToken ct = default)
+    public async Task DeleteAsync(int itemId, CancellationToken ct = default)
     {
         var item = await _items.GetByIdAsync(itemId)
             ?? throw new NotFoundException($"DailyItem {itemId} not found.");
-
-        // Business rules: system items are protected; users can only delete their own.
-        if (item.IsSystem)
-            throw new ForbiddenException("System items cannot be deleted.");
-
-        if (item.OwnerUserId != userId)
-            throw new ForbiddenException("You can only delete items you own.");
 
         // Soft delete — preserves any existing transactions that reference it.
         item.IsActive = false;

@@ -1,8 +1,33 @@
 <div class="shell">
   <header class="top-bar">
-    <div class="brand">DailyTracker</div>
+    <a class="brand" routerLink="/home" aria-label="DailyTracker home">
+      <svg
+        class="logo"
+        viewBox="0 0 32 32"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+        </defs>
+        <rect x="1" y="1" width="30" height="30" rx="8" fill="url(#logoGrad)" />
+        <path
+          d="M9 17l5 5 9-11"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="2.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      <span class="brand-text">DailyTracker</span>
+    </a>
 
     <nav class="nav">
+      <a routerLink="/home" routerLinkActive="active">Home</a>
       <a routerLink="/items" routerLinkActive="active">Items</a>
       <a routerLink="/transactions" routerLinkActive="active">Transactions</a>
     </nav>

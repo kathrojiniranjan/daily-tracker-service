@@ -11,10 +11,10 @@ public sealed class UserRepository : IUserRepository
     public UserRepository(AppDbContext db) => _db = db;
 
     public Task<User?> GetByIdAsync(Guid id) =>
-        _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+        _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
 
     public Task<User?> GetByUsernameAsync(string username) =>
-        _db.Users.FirstOrDefaultAsync(u => u.Username == username);
+        _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Username == username);
 
     public Task<bool> UsernameExistsAsync(string username) =>
         _db.Users.AnyAsync(u => u.Username == username);
@@ -24,4 +24,7 @@ public sealed class UserRepository : IUserRepository
 
     public async Task AddAsync(User user) =>
         await _db.Users.AddAsync(user);
+
+    public Task<int> CountAsync() =>
+        _db.Users.CountAsync();
 }

@@ -49,7 +49,7 @@ export class Login {
 // Only allow internal paths. Reject protocol-relative (//evil.com)
 // and absolute URLs (https://evil.com) to prevent open-redirect attacks.
 function safeReturnUrl(raw: string | null): string {
-  if (!raw) return '/items';
-  if (!raw.startsWith('/') || raw.startsWith('//')) return '/items';
+  if (!raw) return '/home';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/home';
   return raw;
 }

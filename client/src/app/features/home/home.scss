@@ -1,0 +1,140 @@
+.home {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    color: #111827;
+  }
+
+  .subtitle {
+    margin: 0 0 24px;
+    color: #6b7280;
+    font-size: 14px;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+      color: #1d4ed8;
+    }
+
+    p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .metric {
+      margin: 8px 0 4px;
+      font-size: 28px;
+      font-weight: 600;
+      color: #111827;
+
+      &.placeholder {
+        color: #d1d5db;
+      }
+    }
+
+    .muted {
+      color: #9ca3af;
+      font-size: 12px;
+    }
+
+    .error {
+      color: #b91c1c;
+      font-size: 13px;
+    }
+
+    .recent {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 0;
+
+      li {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        align-items: baseline;
+        padding: 6px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 13px;
+
+        &:last-child {
+          border-bottom: 0;
+        }
+
+        .name {
+          color: #111827;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .amt {
+          color: #1d4ed8;
+          font-weight: 600;
+        }
+        .date {
+          color: #9ca3af;
+          font-size: 12px;
+        }
+      }
+    }
+
+    .chart {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .row {
+        display: grid;
+        grid-template-columns: 80px 1fr 60px;
+        gap: 8px;
+        align-items: center;
+        font-size: 12px;
+
+        .label {
+          color: #374151;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .track {
+          height: 14px;
+          background: #f3f4f6;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .fill {
+          height: 100%;
+          background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+          border-radius: 4px;
+          transition: width 0.3s ease;
+        }
+
+        .value {
+          color: #111827;
+          font-weight: 600;
+          text-align: right;
+        }
+      }
+    }
+  }
+}

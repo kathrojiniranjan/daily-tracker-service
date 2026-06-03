@@ -20,6 +20,7 @@ import { TransactionsService } from '../../../core/transactions/transactions.ser
 import {
   CreateTransactionRequest,
   Transaction,
+  UpdateTransactionRequest,
 } from '../../../core/transactions/transaction.models';
 
 @Component({
@@ -65,6 +66,8 @@ export class TransactionsList {
 
   protected readonly submitting = signal(false);
   protected readonly formError = signal<string | null>(null);
+  protected readonly editingId = signal<string | null>(null);
+  protected readonly deletingId = signal<string | null>(null);
 
   protected readonly state = toSignal(
     combineLatest([
@@ -105,20 +108,7 @@ export class TransactionsList {
   );
 
   constructor() {
-    // Auto-suggest amount when item or quantity changes — user can still override.
-    this.createForm.controls.dailyItemId.valueChanges.subscribe(() => this.suggestAmount());
-    this.createForm.controls.quantity.valueChanges.subscribe(() => this.suggestAmount());
-  }
-
-  private suggestAmount(): void {
-    const id = this.createForm.controls.dailyItemId.value;
-    const qty = this.createForm.controls.quantity.value;
-    const item = this.items().find((i) => i.id === id);
-    if (!item || item.defaultPrice === null || !qty) {
-      return;
-    }
-    const suggested = Number((item.defaultPrice * qty).toFixed(2));
-    this.createForm.controls.amount.setValue(suggested, { emitEvent: false });
+    // Amount is user-entered. We don't auto-suggest from quantity.
   }
 
   protected onSubmit(): void {
@@ -129,32 +119,84 @@ export class TransactionsList {
     this.formError.set(null);
 
     const v = this.createForm.getRawValue();
-    const body: CreateTransactionRequest = {
-      dailyItemId: v.dailyItemId!,
-      quantity: v.quantity!,
-      amount: v.amount!,
-      transactionDate: v.transactionDate,
-      notes: v.notes?.trim() || null,
-    };
+    const editing = this.editingId();
+
+    const request$ = editing
+      ? this.service.update(editing, {
+          quantity: v.quantity!,
+          amount: v.amount!,
+          transactionDate: v.transactionDate,
+          notes: v.notes?.trim() || null,
+        } satisfies UpdateTransactionRequest)
+      : this.service.create({
+          dailyItemId: v.dailyItemId!,
+          quantity: v.quantity!,
+          amount: v.amount!,
+          transactionDate: v.transactionDate,
+          notes: v.notes?.trim() || null,
+        } satisfies CreateTransactionRequest);
+
+    request$.pipe(finalize(() => this.submitting.set(false))).subscribe({
+      next: () => {
+        this.resetForm();
+        this.refresh$.next();
+      },
+      error: (err) => {
+        this.formError.set(err?.error?.detail ?? err?.message ?? 'Failed to save transaction.');
+      },
+    });
+  }
+
+  protected startEdit(t: Transaction): void {
+    this.editingId.set(t.id);
+    this.formError.set(null);
+    this.createForm.setValue({
+      dailyItemId: t.dailyItemId,
+      quantity: t.quantity,
+      amount: t.amount,
+      transactionDate: t.transactionDate,
+      notes: t.notes ?? '',
+    });
+    // Item cannot change on edit (API doesn't accept it on PUT).
+    this.createForm.controls.dailyItemId.disable({ emitEvent: false });
+  }
+
+  protected cancelEdit(): void {
+    this.resetForm();
+  }
+
+  protected onDelete(t: Transaction): void {
+    if (this.deletingId() || this.submitting()) return;
+    if (!confirm(`Delete this ${t.dailyItemName} transaction for ₹${t.amount}?`)) return;
+
+    this.deletingId.set(t.id);
+    this.formError.set(null);
 
     this.service
-      .create(body)
-      .pipe(finalize(() => this.submitting.set(false)))
+      .delete(t.id)
+      .pipe(finalize(() => this.deletingId.set(null)))
       .subscribe({
         next: () => {
-          this.createForm.reset({
-            dailyItemId: null,
-            quantity: null,
-            amount: null,
-            transactionDate: toIsoDate(new Date()),
-            notes: '',
-          });
+          // If we were editing this exact row, drop edit mode.
+          if (this.editingId() === t.id) this.resetForm();
           this.refresh$.next();
         },
         error: (err) => {
-          this.formError.set(err?.error?.detail ?? err?.message ?? 'Failed to create transaction.');
+          this.formError.set(err?.error?.detail ?? err?.message ?? 'Failed to delete transaction.');
         },
       });
+  }
+
+  private resetForm(): void {
+    this.editingId.set(null);
+    this.createForm.controls.dailyItemId.enable({ emitEvent: false });
+    this.createForm.reset({
+      dailyItemId: null,
+      quantity: null,
+      amount: null,
+      transactionDate: toIsoDate(new Date()),
+      notes: '',
+    });
   }
 
   protected total(items: readonly Transaction[]): number {

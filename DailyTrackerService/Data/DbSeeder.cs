@@ -25,10 +25,23 @@ public static class DbSeeder
         // but for a learning project this is convenient.
         await db.Database.MigrateAsync();
 
+        await SeedRolesAsync(db);
+        await db.SaveChangesAsync();
+
         await SeedUsersAsync(db);
         await SeedSystemItemsAsync(db);
+        await PromoteLegacyUserItemsAsync(db);
 
         await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedRolesAsync(AppDbContext db)
+    {
+        if (await db.Roles.AnyAsync()) return;
+
+        await db.Roles.AddRangeAsync(
+            new Role { Name = "Admin" },
+            new Role { Name = "User" });
     }
 
     private static async Task SeedUsersAsync(AppDbContext db)
@@ -38,6 +51,9 @@ public static class DbSeeder
             return; // already seeded
         }
 
+        var adminRoleId = await db.Roles.Where(r => r.Name == "Admin").Select(r => r.Id).FirstAsync();
+        var userRoleId  = await db.Roles.Where(r => r.Name == "User").Select(r => r.Id).FirstAsync();
+
         // PasswordHasher: PBKDF2 + per-user salt + version byte. Built into ASP.NET Core.
         var hasher = new PasswordHasher<User>();
 
@@ -45,7 +61,7 @@ public static class DbSeeder
         {
             Username = "admin",
             Email = "admin@local",
-            Role = "Admin",
+            RoleId = adminRoleId,
         };
         admin.PasswordHash = hasher.HashPassword(admin, DevPassword);
 
@@ -53,7 +69,7 @@ public static class DbSeeder
         {
             Username = "user",
             Email = "user@local",
-            Role = "User",
+            RoleId = userRoleId,
         };
         user1.PasswordHash = hasher.HashPassword(user1, DevPassword);
 
@@ -61,7 +77,7 @@ public static class DbSeeder
         {
             Username = "user2",
             Email = "user2@local",
-            Role = "User",
+            RoleId = userRoleId,
         };
         user2.PasswordHash = hasher.HashPassword(user2, DevPassword);
 
@@ -85,5 +101,29 @@ public static class DbSeeder
         };
 
         await db.DailyItems.AddRangeAsync(items);
+    }
+
+    // One-time cleanup: items created before catalog became admin-only may exist
+    // as user-owned custom items. Promote those owned by Admin users to system.
+    private static async Task PromoteLegacyUserItemsAsync(AppDbContext db)
+    {
+        var adminIds = await db.Users
+            .Where(u => u.Role.Name == "Admin")
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        if (adminIds.Count == 0) return;
+
+        var legacy = await db.DailyItems
+            .Where(i => !i.IsSystem
+                     && i.OwnerUserId != null
+                     && adminIds.Contains(i.OwnerUserId.Value))
+            .ToListAsync();
+
+        foreach (var item in legacy)
+        {
+            item.IsSystem = true;
+            item.OwnerUserId = null;
+        }
     }
 }

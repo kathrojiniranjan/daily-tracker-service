@@ -152,9 +152,7 @@ export class TransactionsList {
           this.refresh$.next();
         },
         error: (err) => {
-          this.formError.set(
-            err?.error?.detail ?? err?.message ?? 'Failed to create transaction.',
-          );
+          this.formError.set(err?.error?.detail ?? err?.message ?? 'Failed to create transaction.');
         },
       });
   }

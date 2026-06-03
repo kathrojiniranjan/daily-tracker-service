@@ -8,7 +8,10 @@
         <option [ngValue]="null" disabled>Select item…</option>
         @for (it of items(); track it.id) {
           <option [ngValue]="it.id">
-            {{ it.name }}@if (it.unit) { <span> ({{ it.unit }})</span> }
+            {{ it.name }}
+            @if (it.unit) {
+              <span> ({{ it.unit }})</span>
+            }
           </option>
         }
       </select>

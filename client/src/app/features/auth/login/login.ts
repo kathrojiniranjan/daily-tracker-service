@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
@@ -13,6 +13,7 @@ export class Login {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   // UI state as signals — template auto-updates when these change.
   protected readonly loading = signal(false);
@@ -35,11 +36,20 @@ export class Login {
     try {
       const { username, password } = this.loginForm.getRawValue();
       await this.auth.login(username, password);
-      await this.router.navigate(['/items']);
+      const target = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl'));
+      await this.router.navigateByUrl(target);
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Login failed.');
     } finally {
       this.loading.set(false);
     }
   }
+}
+
+// Only allow internal paths. Reject protocol-relative (//evil.com)
+// and absolute URLs (https://evil.com) to prevent open-redirect attacks.
+function safeReturnUrl(raw: string | null): string {
+  if (!raw) return '/items';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/items';
+  return raw;
 }

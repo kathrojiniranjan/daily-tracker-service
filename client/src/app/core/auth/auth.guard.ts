@@ -3,7 +3,7 @@ import { CanActivateFn, Router } from '@angular/router';
 
 import { AuthService } from './auth.service';
 
-export const authGuard: CanActivateFn = () => {
+export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
@@ -11,9 +11,10 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  // Stale or missing session — clear it so the UI reflects logged-out state.
   if (auth.isLoggedIn()) {
     auth.logout();
   }
-  return router.createUrlTree(['/login']);
+  return router.createUrlTree(['/login'], {
+    queryParams: { returnUrl: state.url },
+  });
 };

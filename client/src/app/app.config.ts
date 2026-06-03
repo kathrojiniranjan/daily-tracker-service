@@ -4,11 +4,12 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/auth/jwt.interceptor';
+import { authErrorInterceptor } from './core/auth/auth-error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([jwtInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([jwtInterceptor, authErrorInterceptor])),
   ],
 };

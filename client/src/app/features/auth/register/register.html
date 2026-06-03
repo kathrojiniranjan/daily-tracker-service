@@ -71,9 +71,15 @@
           placeholder="Re-enter password"
           autocomplete="new-password"
         />
-        @if (registerForm.controls.confirmPassword.touched && registerForm.controls.confirmPassword.errors?.['required']) {
+        @if (
+          registerForm.controls.confirmPassword.touched &&
+          registerForm.controls.confirmPassword.errors?.['required']
+        ) {
           <small class="error">Please confirm your password.</small>
-        } @else if (registerForm.controls.confirmPassword.touched && registerForm.errors?.['passwordsMismatch']) {
+        } @else if (
+          registerForm.controls.confirmPassword.touched &&
+          registerForm.errors?.['passwordsMismatch']
+        ) {
           <small class="error">Passwords do not match.</small>
         }
       </label>
@@ -87,8 +93,6 @@
       }
     </form>
 
-    <p class="login-hint">
-      Already have an account? <a routerLink="/login">Sign in</a>
-    </p>
+    <p class="login-hint">Already have an account? <a routerLink="/login">Sign in</a></p>
   </div>
 </div>

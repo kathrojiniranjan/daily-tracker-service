@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -6,7 +6,9 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -16,6 +18,11 @@ import { RouterLink } from '@angular/router';
 })
 export class Register {
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  protected readonly loading = signal(false);
+  protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly registerForm = this.fb.nonNullable.group(
     {
@@ -27,13 +34,24 @@ export class Register {
     { validators: [passwordsMatch] },
   );
 
-  protected onSubmit(): void {
+  protected async onSubmit(): Promise<void> {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
       return;
     }
-    const { username, email, password } = this.registerForm.getRawValue();
-    console.log('Register submitted:', { username, email, password });
+
+    this.errorMessage.set(null);
+    this.loading.set(true);
+
+    try {
+      const { username, email, password } = this.registerForm.getRawValue();
+      await this.auth.register(username, email, password);
+      await this.router.navigate(['/items']);
+    } catch (err) {
+      this.errorMessage.set(err instanceof Error ? err.message : 'Registration failed.');
+    } finally {
+      this.loading.set(false);
+    }
   }
 }
 

@@ -78,9 +78,13 @@
         }
       </label>
 
-      <button type="submit" class="primary" [disabled]="registerForm.invalid">
-        Create account
+      <button type="submit" class="primary" [disabled]="registerForm.invalid || loading()">
+        {{ loading() ? 'Creating account…' : 'Create account' }}
       </button>
+
+      @if (errorMessage(); as msg) {
+        <p class="error server-error">{{ msg }}</p>
+      }
     </form>
 
     <p class="login-hint">

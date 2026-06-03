@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 import { AuthUser } from './auth-user.model';
-import { LoginRequest, LoginResponse } from './auth.models';
+import { LoginRequest, LoginResponse, RegisterRequest } from './auth.models';
 import { environment } from '../../../environments/environment';
 
 const STORAGE_KEY = 'auth.user';
@@ -32,9 +32,30 @@ export class AuthService {
     }
   }
 
+  async register(username: string, email: string, password: string): Promise<void> {
+    const body: RegisterRequest = { username, email, password };
+    try {
+      const response = await firstValueFrom(
+        this.http.post<LoginResponse>(`${this.baseUrl}/register`, body),
+      );
+      this.persist(response);
+    } catch (err) {
+      throw new Error(extractErrorMessage(err, 'Registration failed.'));
+    }
+  }
+
   logout(): void {
     this.userSignal.set(null);
     localStorage.removeItem(STORAGE_KEY);
+  }
+
+  isTokenExpired(): boolean {
+    const u = this.userSignal();
+    if (!u) {
+      return true;
+    }
+    const exp = Date.parse(u.expiresAtUtc);
+    return Number.isNaN(exp) || exp <= Date.now();
   }
 
   private persist(response: LoginResponse): void {

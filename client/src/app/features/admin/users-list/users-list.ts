@@ -1,15 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, finalize, map, of, startWith, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  finalize,
+  map,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 
 import { AdminService } from '../../../core/admin/admin.service';
 import { UserSummary } from '../../../core/admin/admin.models';
 import { AuthService } from '../../../core/auth/auth.service';
+import { DEFAULT_PAGE_SIZE } from '../../../core/common/paged-result';
+import { Pagination } from '../../../shared/pagination/pagination';
 
 interface UsersState {
   items: UserSummary[];
+  totalCount: number;
   loading: boolean;
   error: string | null;
 }
@@ -19,7 +31,7 @@ type PanelMode = 'role' | 'password' | null;
 @Component({
   selector: 'app-users-list',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, Pagination],
   templateUrl: './users-list.html',
   styleUrl: './users-list.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,15 +43,30 @@ export class UsersList {
 
   private readonly refresh$ = new BehaviorSubject<void>(undefined);
 
-  protected readonly state = toSignal<UsersState>(
-    this.refresh$.pipe(
-      switchMap(() =>
-        this.admin.getUsers().pipe(
-          map((items) => ({ items, loading: false, error: null }) satisfies UsersState),
-          startWith({ items: [], loading: true, error: null } satisfies UsersState),
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal<number>(DEFAULT_PAGE_SIZE);
+
+  private readonly page$ = toObservable(this.page);
+  private readonly pageSize$ = toObservable(this.pageSize);
+
+  protected readonly state = toSignal(
+    combineLatest([this.refresh$, this.page$, this.pageSize$]).pipe(
+      switchMap(([, page, pageSize]) =>
+        this.admin.getUsers(page, pageSize).pipe(
+          map(
+            (res) =>
+              ({
+                items: res.items,
+                totalCount: res.totalCount,
+                loading: false,
+                error: null,
+              }) satisfies UsersState,
+          ),
+          startWith({ items: [], totalCount: 0, loading: true, error: null } satisfies UsersState),
           catchError((err: { message?: string }) =>
             of({
               items: [],
+              totalCount: 0,
               loading: false,
               error: err.message ?? 'Failed to load users.',
             } satisfies UsersState),
@@ -47,7 +74,14 @@ export class UsersList {
         ),
       ),
     ),
-    { requireSync: true },
+    {
+      initialValue: {
+        items: [],
+        totalCount: 0,
+        loading: true,
+        error: null,
+      } satisfies UsersState,
+    },
   );
 
   protected readonly totalTransactions = computed(() =>
@@ -69,6 +103,16 @@ export class UsersList {
   protected readonly passwordForm = this.fb.nonNullable.group({
     newPassword: ['', [Validators.required, Validators.minLength(8)]],
   });
+
+  protected onPageChange(p: number): void {
+    this.page.set(p);
+  }
+
+  protected onPageSizeChange(s: number): void {
+    // Snap back to page 1 so the user isn't stranded past the new last page.
+    this.pageSize.set(s);
+    this.page.set(1);
+  }
 
   protected openRole(u: UserSummary): void {
     this.openId.set(u.id);

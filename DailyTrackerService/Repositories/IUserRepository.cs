@@ -1,5 +1,6 @@
 using DailyTrackerService.Data.Entities;
 using DailyTrackerService.Dtos.Admin;
+using DailyTrackerService.Dtos.Common;
 
 namespace DailyTrackerService.Repositories;
 
@@ -13,9 +14,9 @@ public interface IUserRepository
     Task<int> CountAsync();
 
     /// <summary>
-    /// Admin-only listing: projects each user plus a count of their transactions.
-    /// Returned as a DTO (not entities) because we don't want to materialise full
-    /// User objects just to read a few columns.
+    /// Admin-only paged listing: projects each user plus a count of their
+    /// transactions. Returns the page slice plus total count for the caller
+    /// to compute pagination metadata.
     /// </summary>
-    Task<IReadOnlyList<UserSummaryResponse>> GetAllSummariesAsync();
+    Task<PagedResult<UserSummaryResponse>> GetSummariesPagedAsync(PageQuery query);
 }

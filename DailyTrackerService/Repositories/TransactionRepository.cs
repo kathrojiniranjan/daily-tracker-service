@@ -1,5 +1,6 @@
 using DailyTrackerService.Data;
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyTrackerService.Repositories;
@@ -40,6 +41,31 @@ public sealed class TransactionRepository : ITransactionRepository
         return q.OrderByDescending(t => t.TransactionDate)
                 .ThenByDescending(t => t.CreatedAt)
                 .ToListAsync();
+    }
+
+    public async Task<(List<Transaction> Items, int TotalCount)> GetForRangePagedAsync(
+        Guid? userId, DateOnly from, DateOnly to, PageQuery query, bool includeUser)
+    {
+        var q = _db.Transactions
+            .AsNoTracking()
+            .Include(t => t.DailyItem)
+            .Where(t => t.TransactionDate >= from && t.TransactionDate <= to);
+
+        if (includeUser)
+            q = q.Include(t => t.User);
+
+        if (userId is Guid uid)
+            q = q.Where(t => t.UserId == uid);
+
+        var total = await q.CountAsync();
+        var items = await q
+            .OrderByDescending(t => t.TransactionDate)
+            .ThenByDescending(t => t.CreatedAt)
+            .Skip(query.Skip)
+            .Take(query.NormalizedPageSize)
+            .ToListAsync();
+
+        return (items, total);
     }
 
     public async Task<decimal> GetMonthlyTotalAsync(Guid userId, int year, int month)

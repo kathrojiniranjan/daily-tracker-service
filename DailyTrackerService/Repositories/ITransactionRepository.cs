@@ -1,4 +1,5 @@
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Common;
 
 namespace DailyTrackerService.Repositories;
 
@@ -18,6 +19,13 @@ public interface ITransactionRepository
     /// User so callers can render the owner column.
     /// </summary>
     Task<List<Transaction>> GetForRangeAsync(Guid? userId, DateOnly from, DateOnly to);
+
+    /// <summary>
+    /// Paged variant of <see cref="GetForRangeAsync"/>. When <paramref name="includeUser"/>
+    /// is true (admin path), eagerly loads the owner so the response can include username.
+    /// </summary>
+    Task<(List<Transaction> Items, int TotalCount)> GetForRangePagedAsync(
+        Guid? userId, DateOnly from, DateOnly to, PageQuery query, bool includeUser);
 
     /// <summary>
     /// Sums Amount for a user across a calendar month. Returns 0 if none.

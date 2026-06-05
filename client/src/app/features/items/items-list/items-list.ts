@@ -1,19 +1,30 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { BehaviorSubject, catchError, finalize, map, of, startWith, switchMap } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  finalize,
+  map,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 
 import { AuthService } from '../../../core/auth/auth.service';
+import { DEFAULT_PAGE_SIZE } from '../../../core/common/paged-result';
 import { DailyItemsService } from '../../../core/items/daily-items.service';
 import {
   DailyItem,
   CreateDailyItemRequest,
   UpdateDailyItemRequest,
 } from '../../../core/items/daily-item.models';
+import { Pagination } from '../../../shared/pagination/pagination';
 
 @Component({
   selector: 'app-items-list',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, Pagination],
   templateUrl: './items-list.html',
   styleUrl: './items-list.scss',
 })
@@ -26,23 +37,46 @@ export class ItemsList {
 
   private readonly refresh$ = new BehaviorSubject<void>(undefined);
 
+  protected readonly page = signal(1);
+  protected readonly pageSize = signal<number>(DEFAULT_PAGE_SIZE);
+  private readonly page$ = toObservable(this.page);
+  private readonly pageSize$ = toObservable(this.pageSize);
+
   protected readonly state = toSignal(
-    this.refresh$.pipe(
-      switchMap(() =>
-        this.itemsService.getAll().pipe(
-          map((items) => ({ items, loading: false, error: null as string | null })),
+    combineLatest([this.refresh$, this.page$, this.pageSize$]).pipe(
+      switchMap(([, page, pageSize]) =>
+        this.itemsService.getPaged(page, pageSize).pipe(
+          map((res) => ({
+            items: res.items,
+            totalCount: res.totalCount,
+            loading: false,
+            error: null as string | null,
+          })),
           catchError((err) =>
             of({
               items: [] as DailyItem[],
+              totalCount: 0,
               loading: false,
               error: (err?.message ?? 'Failed to load items.') as string | null,
             }),
           ),
-          startWith({ items: [] as DailyItem[], loading: true, error: null as string | null }),
+          startWith({
+            items: [] as DailyItem[],
+            totalCount: 0,
+            loading: true,
+            error: null as string | null,
+          }),
         ),
       ),
     ),
-    { requireSync: true },
+    {
+      initialValue: {
+        items: [] as DailyItem[],
+        totalCount: 0,
+        loading: true,
+        error: null as string | null,
+      },
+    },
   );
 
   protected readonly submitting = signal(false);
@@ -52,6 +86,15 @@ export class ItemsList {
   protected readonly editingId = signal<number | null>(null);
   protected readonly savingId = signal<number | null>(null);
   protected readonly editError = signal<string | null>(null);
+
+  protected onPageChange(p: number): void {
+    this.page.set(p);
+  }
+
+  protected onPageSizeChange(s: number): void {
+    this.pageSize.set(s);
+    this.page.set(1);
+  }
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(128)]],

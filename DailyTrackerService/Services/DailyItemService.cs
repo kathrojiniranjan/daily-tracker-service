@@ -1,4 +1,5 @@
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Dtos.DailyItems;
 using DailyTrackerService.Exceptions;
 using DailyTrackerService.Repositories;
@@ -22,6 +23,15 @@ public sealed class DailyItemService : IDailyItemService
     {
         var entities = await _items.GetVisibleToUserAsync(userId);
         return entities.Select(i => i.ToResponse()).ToList();
+    }
+
+    public async Task<PagedResult<DailyItemResponse>> GetVisiblePagedAsync(
+        Guid userId, PageQuery query, CancellationToken ct = default)
+    {
+        var (entities, total) = await _items.GetVisibleToUserPagedAsync(userId, query);
+        var dtos = entities.Select(i => i.ToResponse()).ToList();
+        return new PagedResult<DailyItemResponse>(
+            dtos, total, query.NormalizedPage, query.NormalizedPageSize);
     }
 
     public async Task<DailyItemResponse> CreateAsync(

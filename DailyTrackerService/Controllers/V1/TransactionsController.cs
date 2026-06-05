@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using DailyTrackerService.Auditing;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Dtos.Transactions;
 using DailyTrackerService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -40,6 +41,21 @@ public sealed class TransactionsController : BaseApiController
         return Ok(list);
     }
 
+    // GET: api/v1/transactions/paged?from=...&to=...&userId=...&page=1&pageSize=20
+    // Same admin/user rules as GetRange, but with pagination. Admins can pass
+    // userId to narrow to one user; non-admins are always scoped to themselves.
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<TransactionResponse>>> GetRangePaged(
+        [FromQuery] DateOnly from,
+        [FromQuery] DateOnly to,
+        [FromQuery] Guid? userId,
+        [FromQuery] PageQuery query,
+        CancellationToken ct)
+    {
+        var result = await _service.GetForRangePagedAsync(
+            CurrentUserId, IsAdmin, userId, from, to, query, ct);
+        return Ok(result);
+    }
     // GET: api/v1/transactions/summary/2026/5
     [HttpGet("summary/{year:int}/{month:int}")]
     public async Task<ActionResult<MonthlySummaryResponse>> GetMonthlySummary(

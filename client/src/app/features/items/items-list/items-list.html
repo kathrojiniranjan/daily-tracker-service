@@ -117,5 +117,14 @@
     @if (editError(); as err) {
       <p class="error">{{ err }}</p>
     }
+
+    <app-pagination
+      [page]="page()"
+      [pageSize]="pageSize()"
+      [totalCount]="state().totalCount"
+      [disabled]="state().loading"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   }
 </section>

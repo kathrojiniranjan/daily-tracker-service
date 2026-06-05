@@ -1,4 +1,5 @@
 using DailyTrackerService.Dtos.Admin;
+using DailyTrackerService.Dtos.Common;
 
 namespace DailyTrackerService.Services;
 
@@ -6,7 +7,7 @@ public interface IAdminService
 {
     Task<AdminSummaryResponse> GetSummaryAsync(int year, int month, CancellationToken ct = default);
 
-    Task<IReadOnlyList<UserSummaryResponse>> GetUsersAsync(CancellationToken ct = default);
+    Task<PagedResult<UserSummaryResponse>> GetUsersAsync(PageQuery query, CancellationToken ct = default);
 
     Task AssignRoleAsync(Guid actingAdminId, Guid userId, string roleName, CancellationToken ct = default);
 

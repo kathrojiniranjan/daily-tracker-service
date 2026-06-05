@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using DailyTrackerService.Auditing;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Dtos.DailyItems;
 using DailyTrackerService.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -16,11 +17,20 @@ public sealed class DailyItemsController : BaseApiController
 
     public DailyItemsController(IDailyItemService service) => _service = service;
 
-    // GET: api/v1/dailyitems
+    // GET: api/v1/dailyitems  — unpaged, used by the transactions item picker.
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<DailyItemResponse>>> GetVisible(CancellationToken ct)
     {
         var items = await _service.GetVisibleAsync(CurrentUserId, ct);
+        return Ok(items);
+    }
+
+    // GET: api/v1/dailyitems/paged?page=1&pageSize=20  — used by the items management page.
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<DailyItemResponse>>> GetVisiblePaged(
+        [FromQuery] PageQuery query, CancellationToken ct)
+    {
+        var items = await _service.GetVisiblePagedAsync(CurrentUserId, query, ct);
         return Ok(items);
     }
 

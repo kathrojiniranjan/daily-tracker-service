@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using DailyTrackerService.Dtos.Admin;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +25,12 @@ public sealed class AdminController : BaseApiController
         return Ok(summary);
     }
 
-    // GET: api/v1/admin/users
+    // GET: api/v1/admin/users?page=1&pageSize=20
     [HttpGet("users")]
-    public async Task<ActionResult<IReadOnlyList<UserSummaryResponse>>> GetUsers(
-        CancellationToken ct)
+    public async Task<ActionResult<PagedResult<UserSummaryResponse>>> GetUsers(
+        [FromQuery] PageQuery query, CancellationToken ct)
     {
-        var users = await _service.GetUsersAsync(ct);
+        var users = await _service.GetUsersAsync(query, ct);
         return Ok(users);
     }
 

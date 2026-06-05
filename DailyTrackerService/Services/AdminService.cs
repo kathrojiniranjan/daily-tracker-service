@@ -1,6 +1,7 @@
 using DailyTrackerService.Data;
 using DailyTrackerService.Data.Entities;
 using DailyTrackerService.Dtos.Admin;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Exceptions;
 using DailyTrackerService.Repositories;
 using Microsoft.AspNetCore.Identity;
@@ -56,8 +57,9 @@ public sealed class AdminService : IAdminService
         return new AdminSummaryResponse(totalUsers, count, total, topSpenders);
     }
 
-    public Task<IReadOnlyList<UserSummaryResponse>> GetUsersAsync(CancellationToken ct = default) =>
-        _users.GetAllSummariesAsync();
+    public Task<PagedResult<UserSummaryResponse>> GetUsersAsync(
+        PageQuery query, CancellationToken ct = default) =>
+        _users.GetSummariesPagedAsync(query);
 
     public async Task AssignRoleAsync(
         Guid actingAdminId, Guid userId, string roleName, CancellationToken ct = default)

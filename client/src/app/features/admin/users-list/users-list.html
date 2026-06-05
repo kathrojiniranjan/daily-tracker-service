@@ -38,11 +38,11 @@
     <p class="muted">Loading users…</p>
   } @else if (s.error) {
     <p class="error">{{ s.error }}</p>
-  } @else if (s.items.length === 0) {
+  } @else if (s.totalCount === 0) {
     <p class="muted">No users found.</p>
   } @else {
     <p class="summary">
-      <strong>{{ s.items.length }}</strong> user(s) — total
+      <strong>{{ s.totalCount }}</strong> user(s) — page total
       <strong>{{ totalTransactions() | number: '1.0-0' }}</strong> transactions
     </p>
 
@@ -159,5 +159,14 @@
         </tbody>
       </table>
     </div>
+
+    <app-pagination
+      [page]="page()"
+      [pageSize]="pageSize()"
+      [totalCount]="s.totalCount"
+      [disabled]="s.loading"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
   }
 </section>

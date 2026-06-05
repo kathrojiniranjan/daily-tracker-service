@@ -1,6 +1,7 @@
 using DailyTrackerService.Data;
 using DailyTrackerService.Data.Entities;
 using DailyTrackerService.Dtos.Admin;
+using DailyTrackerService.Dtos.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace DailyTrackerService.Repositories;
@@ -29,12 +30,14 @@ public sealed class UserRepository : IUserRepository
     public Task<int> CountAsync() =>
         _db.Users.CountAsync();
 
-    public async Task<IReadOnlyList<UserSummaryResponse>> GetAllSummariesAsync()
+    public async Task<PagedResult<UserSummaryResponse>> GetSummariesPagedAsync(PageQuery query)
     {
-        // Project straight into the DTO so EF only SELECTs the columns we need.
-        // u.Transactions.Count() becomes a correlated sub-query in SQL.
+        var totalCount = await _db.Users.CountAsync();
+
         var rows = await _db.Users
             .OrderBy(u => u.Username)
+            .Skip(query.Skip)
+            .Take(query.NormalizedPageSize)
             .Select(u => new UserSummaryResponse(
                 u.Id,
                 u.Username,
@@ -44,6 +47,7 @@ public sealed class UserRepository : IUserRepository
                 u.Transactions.Count()))
             .ToListAsync();
 
-        return rows;
+        return new PagedResult<UserSummaryResponse>(
+            rows, totalCount, query.NormalizedPage, query.NormalizedPageSize);
     }
 }

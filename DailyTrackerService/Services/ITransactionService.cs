@@ -1,3 +1,4 @@
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Dtos.Transactions;
 
 namespace DailyTrackerService.Services;
@@ -15,6 +16,15 @@ public interface ITransactionService
     /// </summary>
     Task<IReadOnlyList<TransactionResponse>> GetForRangeAdminAsync(
         Guid? userIdFilter, DateOnly from, DateOnly to, CancellationToken ct = default);
+
+    /// <summary>
+    /// Paged variant. When <paramref name="isAdmin"/> is false the call is
+    /// scoped to <paramref name="callerId"/>; when true it returns all rows
+    /// (or filtered to <paramref name="userIdFilter"/> if set).
+    /// </summary>
+    Task<PagedResult<TransactionResponse>> GetForRangePagedAsync(
+        Guid callerId, bool isAdmin, Guid? userIdFilter,
+        DateOnly from, DateOnly to, PageQuery query, CancellationToken ct = default);
 
     Task<MonthlySummaryResponse> GetMonthlySummaryAsync(
         Guid userId, int year, int month, CancellationToken ct = default);

@@ -1,0 +1,41 @@
+<nav class="pagination" aria-label="Pagination">
+  <span class="range">
+    @if (totalCount() === 0) {
+      No results
+    } @else {
+      Showing <strong>{{ rangeStart() }}</strong
+      >–<strong>{{ rangeEnd() }}</strong> of <strong>{{ totalCount() }}</strong>
+    }
+  </span>
+
+  <div class="controls">
+    <label class="size">
+      <span>Per page</span>
+      <select [value]="pageSize()" (change)="onSizeChange($event)" [disabled]="disabled()">
+        @for (n of sizeOptions; track n) {
+          <option [value]="n">{{ n }}</option>
+        }
+      </select>
+    </label>
+
+    <button
+      type="button"
+      class="nav"
+      (click)="prev()"
+      [disabled]="!canPrev()"
+      aria-label="Previous page"
+    >
+      ‹ Prev
+    </button>
+    <span class="page-label">Page {{ page() }} of {{ totalPages() }}</span>
+    <button
+      type="button"
+      class="nav"
+      (click)="next()"
+      [disabled]="!canNext()"
+      aria-label="Next page"
+    >
+      Next ›
+    </button>
+  </div>
+</nav>

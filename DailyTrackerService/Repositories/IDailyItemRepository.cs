@@ -1,4 +1,5 @@
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Common;
 
 namespace DailyTrackerService.Repositories;
 
@@ -9,6 +10,10 @@ public interface IDailyItemRepository
     /// every active custom item owned by that user.
     /// </summary>
     Task<List<DailyItem>> GetVisibleToUserAsync(Guid userId);
+
+    /// <summary>Paged variant of <see cref="GetVisibleToUserAsync"/>.</summary>
+    Task<(List<DailyItem> Items, int TotalCount)> GetVisibleToUserPagedAsync(
+        Guid userId, PageQuery query);
 
     Task<DailyItem?> GetByIdAsync(int id);
 

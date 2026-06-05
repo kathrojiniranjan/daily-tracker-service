@@ -100,11 +100,12 @@
     <p class="error">{{ err }}</p>
   } @else {
     @let items = state().items;
-    @if (items.length === 0) {
+    @let totalCount = state().totalCount;
+    @if (totalCount === 0) {
       <p class="muted">No transactions in this range.</p>
     } @else {
       <p class="summary">
-        <strong>{{ items.length }}</strong> transaction(s) — total
+        <strong>{{ totalCount }}</strong> transaction(s) — page total
         <strong>₹{{ total(items) | number: '1.2-2' }}</strong>
       </p>
       <div class="table-scroll">
@@ -164,6 +165,15 @@
           </tbody>
         </table>
       </div>
+
+      <app-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [totalCount]="totalCount"
+        [disabled]="state().loading"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
     }
   }
 </section>

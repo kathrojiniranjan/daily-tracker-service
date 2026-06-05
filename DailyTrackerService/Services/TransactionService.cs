@@ -1,4 +1,5 @@
 using DailyTrackerService.Data.Entities;
+using DailyTrackerService.Dtos.Common;
 using DailyTrackerService.Dtos.Transactions;
 using DailyTrackerService.Exceptions;
 using DailyTrackerService.Repositories;
@@ -50,6 +51,23 @@ public sealed class TransactionService : ITransactionService
 
         var rows = await _transactions.GetForRangeAsync(userIdFilter, from, to);
         return rows.Select(t => t.ToResponse()).ToList();
+    }
+
+    public async Task<PagedResult<TransactionResponse>> GetForRangePagedAsync(
+        Guid callerId, bool isAdmin, Guid? userIdFilter,
+        DateOnly from, DateOnly to, PageQuery query, CancellationToken ct = default)
+    {
+        if (from > to)
+            throw new ValidationException("'from' date must be on or before 'to' date.");
+
+        // Non-admins are always scoped to themselves; ignore any userId filter.
+        var effectiveUserId = isAdmin ? userIdFilter : callerId;
+        var (rows, total) = await _transactions.GetForRangePagedAsync(
+            effectiveUserId, from, to, query, includeUser: isAdmin);
+
+        var dtos = rows.Select(t => t.ToResponse()).ToList();
+        return new PagedResult<TransactionResponse>(
+            dtos, total, query.NormalizedPage, query.NormalizedPageSize);
     }
 
     public async Task<MonthlySummaryResponse> GetMonthlySummaryAsync(

@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { PagedResult } from '../common/paged-result';
 import { AdminSummary, UserSummary } from './admin.models';
 
 @Injectable({ providedIn: 'root' })
@@ -14,8 +15,11 @@ export class AdminService {
     return this.http.get<AdminSummary>(`${this.baseUrl}/summary/${year}/${month}`);
   }
 
-  getUsers(): Observable<UserSummary[]> {
-    return this.http.get<UserSummary[]>(`${this.baseUrl}/users`);
+  /** Paged listing. Defaults match the backend (page 1, large pageSize) so
+   *  callers that don't care about pagination still get every row. */
+  getUsers(page = 1, pageSize = 500): Observable<PagedResult<UserSummary>> {
+    const params = new HttpParams().set('page', String(page)).set('pageSize', String(pageSize));
+    return this.http.get<PagedResult<UserSummary>>(`${this.baseUrl}/users`, { params });
   }
 
   assignRole(userId: string, role: string): Observable<void> {

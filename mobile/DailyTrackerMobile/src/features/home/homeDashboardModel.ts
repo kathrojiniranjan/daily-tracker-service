@@ -1,7 +1,7 @@
-import { AdminSummary, MonthlySummary, Transaction } from '../../api/contracts';
-import { AdminService } from '../admin/adminService';
-import { AuthService } from '../auth/authService';
-import { TransactionsService } from '../transactions/transactionsService';
+import { AdminSummary, MonthlySummary, Transaction } from "../../api/contracts";
+import { AdminService } from "../admin/adminService";
+import { AuthService } from "../auth/authService";
+import { TransactionsService } from "../transactions/transactionsService";
 
 export interface HomeDashboardState {
   loading: boolean;
@@ -65,25 +65,32 @@ export class HomeDashboardModel {
       );
       this.state.monthlySummary = summary;
 
-      const recentFrom = toIsoDate(new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()));
+      const recentFrom = toIsoDate(
+        new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()),
+      );
       const recentTo = toIsoDate(now);
       const recent = await this.transactions.getRange(recentFrom, recentTo);
-      this.state.recentActivity = (role === 'Admin' && username
-        ? recent.filter((x) => x.username === username)
-        : recent
+      this.state.recentActivity = (
+        role === "Admin" && username
+          ? recent.filter((x) => x.username === username)
+          : recent
       )
         .sort((a, b) => b.transactionDate.localeCompare(a.transactionDate))
         .slice(0, 5);
 
-      if (role === 'Admin') {
-        this.state.adminSummary = await this.admin.getSummary(now.getFullYear(), now.getMonth() + 1);
+      if (role === "Admin") {
+        this.state.adminSummary = await this.admin.getSummary(
+          now.getFullYear(),
+          now.getMonth() + 1,
+        );
       } else {
         this.state.adminSummary = undefined;
       }
 
       return this.getState();
     } catch (error) {
-      this.state.error = error instanceof Error ? error.message : 'Failed to load dashboard.';
+      this.state.error =
+        error instanceof Error ? error.message : "Failed to load dashboard.";
       throw error;
     } finally {
       this.state.loading = false;
@@ -93,27 +100,27 @@ export class HomeDashboardModel {
 
 function greetingForHour(hour: number): string {
   if (hour < 12) {
-    return 'Good morning';
+    return "Good morning";
   }
   if (hour < 17) {
-    return 'Good afternoon';
+    return "Good afternoon";
   }
   if (hour < 21) {
-    return 'Good evening';
+    return "Good evening";
   }
-  return 'Hello';
+  return "Hello";
 }
 
 function monthLabel(date: Date): string {
-  return date.toLocaleString('default', {
-    month: 'long',
-    year: 'numeric',
+  return date.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
   });
 }
 
 function toIsoDate(d: Date): string {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }

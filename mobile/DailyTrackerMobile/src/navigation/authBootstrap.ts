@@ -1,11 +1,11 @@
-import { AuthService } from '../features/auth/authService';
+import { AuthService } from "../features/auth/authService";
 import {
   AppRoute,
   AuthNavigationState,
   buildAuthNavigationState,
   canAccessRoute,
   resolveInitialRoute,
-} from './appNavigator';
+} from "./appNavigator";
 
 export interface NavigationBootstrapResult {
   initialRoute: AppRoute;

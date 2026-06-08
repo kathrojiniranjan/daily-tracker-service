@@ -1,5 +1,5 @@
-import { DailyItem } from '../../api/contracts';
-import { ItemsService } from './itemsService';
+import { DailyItem } from "../../api/contracts";
+import { ItemsService } from "./itemsService";
 
 export type DailyItemListItem = DailyItem;
 
@@ -38,17 +38,17 @@ export class ItemsScreenModel {
     items: [],
     loading: false,
     createValues: {
-      name: '',
-      unit: '',
-      defaultPrice: '',
+      name: "",
+      unit: "",
+      defaultPrice: "",
     },
     createErrors: {},
     creating: false,
     editingItemId: null,
     editValues: {
-      name: '',
-      unit: '',
-      defaultPrice: '',
+      name: "",
+      unit: "",
+      defaultPrice: "",
     },
     editErrors: {},
     savingEdit: false,
@@ -73,15 +73,17 @@ export class ItemsScreenModel {
   }
 
   canDelete(itemId: number): boolean {
-    return this.state.deletingItemId === null || this.state.deletingItemId !== itemId;
+    return (
+      this.state.deletingItemId === null || this.state.deletingItemId !== itemId
+    );
   }
 
   startEdit(item: DailyItemListItem): ItemsScreenState {
     this.state.editingItemId = item.id;
     this.state.editValues = {
       name: item.name,
-      unit: item.unit ?? '',
-      defaultPrice: item.defaultPrice === null ? '' : String(item.defaultPrice),
+      unit: item.unit ?? "",
+      defaultPrice: item.defaultPrice === null ? "" : String(item.defaultPrice),
     };
     this.state.editErrors = {};
     return this.getState();
@@ -153,7 +155,8 @@ export class ItemsScreenModel {
       this.state.items = result.items;
       return this.getState();
     } catch (error) {
-      this.state.error = error instanceof Error ? error.message : 'Failed to load items.';
+      this.state.error =
+        error instanceof Error ? error.message : "Failed to load items.";
       throw error;
     } finally {
       this.state.loading = false;
@@ -162,13 +165,13 @@ export class ItemsScreenModel {
 
   async submitCreate(): Promise<ItemsScreenState> {
     if (this.state.creating) {
-      throw new Error('Create already in progress.');
+      throw new Error("Create already in progress.");
     }
 
     const createErrors = validateCreate(this.state.createValues);
     if (hasCreateErrors(createErrors)) {
       this.state.createErrors = createErrors;
-      throw new Error('Please fix the highlighted fields.');
+      throw new Error("Please fix the highlighted fields.");
     }
 
     this.state.creating = true;
@@ -185,9 +188,9 @@ export class ItemsScreenModel {
       });
 
       this.state.createValues = {
-        name: '',
-        unit: '',
-        defaultPrice: '',
+        name: "",
+        unit: "",
+        defaultPrice: "",
       };
 
       const result = await this.service.getPaged(1, 20);
@@ -195,7 +198,7 @@ export class ItemsScreenModel {
       return this.getState();
     } catch (error) {
       this.state.createErrors.form =
-        error instanceof Error ? error.message : 'Failed to create item.';
+        error instanceof Error ? error.message : "Failed to create item.";
       throw error;
     } finally {
       this.state.creating = false;
@@ -204,16 +207,16 @@ export class ItemsScreenModel {
 
   async submitEdit(): Promise<ItemsScreenState> {
     if (this.state.editingItemId === null) {
-      throw new Error('No item selected for editing.');
+      throw new Error("No item selected for editing.");
     }
     if (this.state.savingEdit) {
-      throw new Error('Edit already in progress.');
+      throw new Error("Edit already in progress.");
     }
 
     const editErrors = validateCreate(this.state.editValues);
     if (hasCreateErrors(editErrors)) {
       this.state.editErrors = editErrors;
-      throw new Error('Please fix the highlighted fields.');
+      throw new Error("Please fix the highlighted fields.");
     }
 
     this.state.savingEdit = true;
@@ -234,7 +237,8 @@ export class ItemsScreenModel {
       this.state.items = result.items;
       return this.getState();
     } catch (error) {
-      this.state.editErrors.form = error instanceof Error ? error.message : 'Failed to update item.';
+      this.state.editErrors.form =
+        error instanceof Error ? error.message : "Failed to update item.";
       throw error;
     } finally {
       this.state.savingEdit = false;
@@ -243,7 +247,7 @@ export class ItemsScreenModel {
 
   async deleteItem(itemId: number): Promise<ItemsScreenState> {
     if (this.state.deletingItemId !== null) {
-      throw new Error('Delete already in progress.');
+      throw new Error("Delete already in progress.");
     }
 
     this.state.deletingItemId = itemId;
@@ -261,7 +265,8 @@ export class ItemsScreenModel {
       this.state.items = result.items;
       return this.getState();
     } catch (error) {
-      this.state.deleteError = error instanceof Error ? error.message : 'Failed to delete item.';
+      this.state.deleteError =
+        error instanceof Error ? error.message : "Failed to delete item.";
       throw error;
     } finally {
       this.state.deletingItemId = null;
@@ -274,25 +279,25 @@ function validateCreate(values: CreateItemValues): CreateItemErrors {
 
   const name = values.name.trim();
   if (!name) {
-    next.name = 'Name is required.';
+    next.name = "Name is required.";
   } else if (name.length > 128) {
-    next.name = 'Name cannot exceed 128 characters.';
+    next.name = "Name cannot exceed 128 characters.";
   }
 
   const unit = values.unit.trim();
   if (unit.length > 32) {
-    next.unit = 'Unit cannot exceed 32 characters.';
+    next.unit = "Unit cannot exceed 32 characters.";
   }
 
   const defaultPriceRaw = values.defaultPrice.trim();
   if (defaultPriceRaw) {
     const value = Number(defaultPriceRaw);
     if (Number.isNaN(value)) {
-      next.defaultPrice = 'Default price must be a number.';
+      next.defaultPrice = "Default price must be a number.";
     } else if (value < 0) {
-      next.defaultPrice = 'Default price cannot be negative.';
+      next.defaultPrice = "Default price cannot be negative.";
     } else if (value > 1_000_000) {
-      next.defaultPrice = 'Default price is too large.';
+      next.defaultPrice = "Default price is too large.";
     }
   }
 
@@ -300,5 +305,7 @@ function validateCreate(values: CreateItemValues): CreateItemErrors {
 }
 
 function hasCreateErrors(errors: CreateItemErrors): boolean {
-  return Boolean(errors.name || errors.unit || errors.defaultPrice || errors.form);
+  return Boolean(
+    errors.name || errors.unit || errors.defaultPrice || errors.form,
+  );
 }

@@ -4,8 +4,8 @@ import {
   PagedResult,
   UpdateDailyItemRequest,
   parityApiRoutes,
-} from '../../api/contracts';
-import { AuthService } from '../auth/authService';
+} from "../../api/contracts";
+import { AuthService } from "../auth/authService";
 
 export class ItemsService {
   private readonly baseUrl: string;
@@ -14,7 +14,10 @@ export class ItemsService {
     private readonly auth: AuthService,
     options: { apiBaseUrl?: string } = {},
   ) {
-    this.baseUrl = (options.apiBaseUrl ?? 'http://localhost:5088').replace(/\/$/, '');
+    this.baseUrl = (options.apiBaseUrl ?? "http://localhost:5088").replace(
+      /\/$/,
+      "",
+    );
   }
 
   async getPaged(page = 1, pageSize = 20): Promise<PagedResult<DailyItem>> {
@@ -24,7 +27,7 @@ export class ItemsService {
     const response = await fetch(
       `${this.baseUrl}${parityApiRoutes.dailyItems}/paged?page=${page}&pageSize=${pageSize}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -33,7 +36,9 @@ export class ItemsService {
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to load items (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to load items (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as PagedResult<DailyItem>;
@@ -43,18 +48,23 @@ export class ItemsService {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.dailyItems}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.dailyItems}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to create item (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to create item (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as DailyItem;
@@ -64,18 +74,23 @@ export class ItemsService {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.dailyItems}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.dailyItems}/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to update item (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to update item (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as DailyItem;
@@ -85,16 +100,21 @@ export class ItemsService {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.dailyItems}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.dailyItems}/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to delete item (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to delete item (HTTP ${response.status}).`,
+      );
     }
   }
 }

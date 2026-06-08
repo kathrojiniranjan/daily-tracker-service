@@ -44,7 +44,7 @@ export function createDefaultSessionStorage(): SessionStorageAdapter {
 }
 
 function getWebLocalStorage(): Storage | null {
-  if (typeof globalThis === 'undefined' || !('localStorage' in globalThis)) {
+  if (typeof globalThis === "undefined" || !("localStorage" in globalThis)) {
     return null;
   }
 

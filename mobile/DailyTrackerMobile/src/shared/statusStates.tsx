@@ -1,7 +1,17 @@
-import React from 'react';
-import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import {
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-export function LoadingState({ message }: { message: string }): React.JSX.Element {
+export function LoadingState({
+  message,
+}: {
+  message: string;
+}): React.JSX.Element {
   return (
     <View style={styles.centered}>
       <ActivityIndicator />
@@ -13,7 +23,7 @@ export function LoadingState({ message }: { message: string }): React.JSX.Elemen
 export function ErrorState({
   message,
   onRetry,
-  retryLabel = 'Retry',
+  retryLabel = "Retry",
 }: {
   message: string;
   onRetry?: () => void;
@@ -30,7 +40,7 @@ export function ErrorState({
 export function EmptyState({
   message,
   onRetry,
-  retryLabel = 'Refresh',
+  retryLabel = "Refresh",
 }: {
   message: string;
   onRetry?: () => void;
@@ -46,15 +56,15 @@ export function EmptyState({
 
 const styles = StyleSheet.create({
   centered: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 10,
     paddingVertical: 16,
   },
   meta: {
-    color: '#4b5563',
+    color: "#4b5563",
   },
   error: {
-    color: '#b91c1c',
+    color: "#b91c1c",
   },
 });

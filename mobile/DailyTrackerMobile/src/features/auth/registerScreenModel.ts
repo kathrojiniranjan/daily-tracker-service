@@ -1,4 +1,4 @@
-import { AuthActionResult, AuthController } from './authController';
+import { AuthActionResult, AuthController } from "./authController";
 
 export interface RegisterFormValues {
   username: string;
@@ -24,10 +24,10 @@ export interface RegisterScreenState {
 export class RegisterScreenModel {
   private state: RegisterScreenState = {
     values: {
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
+      username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
     errors: {},
     submitting: false,
@@ -78,13 +78,13 @@ export class RegisterScreenModel {
 
   async submit(): Promise<AuthActionResult> {
     if (this.state.submitting) {
-      throw new Error('Registration already in progress.');
+      throw new Error("Registration already in progress.");
     }
 
     const errors = validate(this.state.values);
     if (hasErrors(errors)) {
       this.state.errors = errors;
-      throw new Error('Please fix the highlighted fields.');
+      throw new Error("Please fix the highlighted fields.");
     }
 
     this.state.submitting = true;
@@ -98,7 +98,7 @@ export class RegisterScreenModel {
       });
     } catch (error) {
       this.state.errors.form =
-        error instanceof Error ? error.message : 'Registration failed.';
+        error instanceof Error ? error.message : "Registration failed.";
       throw error;
     } finally {
       this.state.submitting = false;
@@ -111,28 +111,28 @@ function validate(values: RegisterFormValues): RegisterFormErrors {
 
   const username = values.username.trim();
   if (!username) {
-    next.username = 'Username is required.';
+    next.username = "Username is required.";
   } else if (username.length < 3) {
-    next.username = 'Username must be at least 3 characters.';
+    next.username = "Username must be at least 3 characters.";
   }
 
   const email = values.email.trim();
   if (!email) {
-    next.email = 'Email is required.';
+    next.email = "Email is required.";
   } else if (!isValidEmail(email)) {
-    next.email = 'Enter a valid email address.';
+    next.email = "Enter a valid email address.";
   }
 
   if (!values.password) {
-    next.password = 'Password is required.';
+    next.password = "Password is required.";
   } else if (values.password.length < 6) {
-    next.password = 'Password must be at least 6 characters.';
+    next.password = "Password must be at least 6 characters.";
   }
 
   if (!values.confirmPassword) {
-    next.confirmPassword = 'Confirm password is required.';
+    next.confirmPassword = "Confirm password is required.";
   } else if (values.confirmPassword !== values.password) {
-    next.confirmPassword = 'Passwords do not match.';
+    next.confirmPassword = "Passwords do not match.";
   }
 
   return next;
@@ -145,9 +145,9 @@ function isValidEmail(value: string): boolean {
 function hasErrors(errors: RegisterFormErrors): boolean {
   return Boolean(
     errors.username ||
-      errors.email ||
-      errors.password ||
-      errors.confirmPassword ||
-      errors.form,
+    errors.email ||
+    errors.password ||
+    errors.confirmPassword ||
+    errors.form,
   );
 }

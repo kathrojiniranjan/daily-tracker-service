@@ -1,18 +1,18 @@
 export type AppRoute =
-  | 'Login'
-  | 'Register'
-  | 'Home'
-  | 'Items'
-  | 'Transactions'
-  | 'AdminUsers';
+  | "Login"
+  | "Register"
+  | "Home"
+  | "Items"
+  | "Transactions"
+  | "AdminUsers";
 
 export const appRouteMap: AppRoute[] = [
-  'Login',
-  'Register',
-  'Home',
-  'Items',
-  'Transactions',
-  'AdminUsers',
+  "Login",
+  "Register",
+  "Home",
+  "Items",
+  "Transactions",
+  "AdminUsers",
 ];
 
 export interface AuthNavigationState {
@@ -26,18 +26,23 @@ export interface AuthBootstrapPort {
   getSession(): { role?: string } | null;
 }
 
-export async function resolveInitialRoute(auth: AuthBootstrapPort): Promise<AppRoute> {
+export async function resolveInitialRoute(
+  auth: AuthBootstrapPort,
+): Promise<AppRoute> {
   await auth.restoreSession();
 
   if (!auth.isLoggedIn()) {
-    return 'Login';
+    return "Login";
   }
 
-  return 'Home';
+  return "Home";
 }
 
-export function canAccessRoute(route: AppRoute, state: AuthNavigationState): boolean {
-  if (route === 'Login' || route === 'Register') {
+export function canAccessRoute(
+  route: AppRoute,
+  state: AuthNavigationState,
+): boolean {
+  if (route === "Login" || route === "Register") {
     return !state.isAuthenticated;
   }
 
@@ -45,8 +50,8 @@ export function canAccessRoute(route: AppRoute, state: AuthNavigationState): boo
     return false;
   }
 
-  if (route === 'AdminUsers') {
-    return state.role === 'Admin';
+  if (route === "AdminUsers") {
+    return state.role === "Admin";
   }
 
   return true;

@@ -1,4 +1,4 @@
-import { AppRoute } from './appNavigator';
+import { AppRoute } from "./appNavigator";
 
 export class NavigationStack {
   private readonly stack: AppRoute[];

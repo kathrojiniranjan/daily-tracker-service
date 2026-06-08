@@ -1,33 +1,44 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
   StyleSheet,
   Text,
-} from 'react-native';
-import { AuthController } from './features/auth/authController';
-import { AuthService } from './features/auth/authService';
-import { LoginScreen } from './features/auth/loginScreen';
-import { RegisterScreen } from './features/auth/registerScreen';
-import { AdminUsersScreen } from './features/admin/adminUsersScreen';
-import { HomeDashboardScreen } from './features/home/homeDashboardScreen';
-import { ItemsScreen } from './features/items/itemsScreen';
-import { TransactionsScreen } from './features/transactions/transactionsScreen';
-import { AuthenticatedShell } from './layout/AuthenticatedShell';
-import { AppRoute, AuthNavigationState, canAccessRoute } from './navigation/appNavigator';
-import { NavigationStack } from './navigation/navigationStack';
+} from "react-native";
+import { AuthController } from "./features/auth/authController";
+import { AuthService } from "./features/auth/authService";
+import { LoginScreen } from "./features/auth/loginScreen";
+import { RegisterScreen } from "./features/auth/registerScreen";
+import { AdminUsersScreen } from "./features/admin/adminUsersScreen";
+import { HomeDashboardScreen } from "./features/home/homeDashboardScreen";
+import { ItemsScreen } from "./features/items/itemsScreen";
+import { TransactionsScreen } from "./features/transactions/transactionsScreen";
+import { AuthenticatedShell } from "./layout/AuthenticatedShell";
+import {
+  AppRoute,
+  AuthNavigationState,
+  canAccessRoute,
+} from "./navigation/appNavigator";
+import { NavigationStack } from "./navigation/navigationStack";
 
-type BootstrapState = 'loading' | 'ready';
-const API_BASE_URL = 'http://localhost:5088';
+type BootstrapState = "loading" | "ready";
+const API_BASE_URL = "http://localhost:5088";
 
 export function App(): React.JSX.Element {
-  const authService = useMemo(() => new AuthService({ apiBaseUrl: API_BASE_URL }), []);
-  const authController = useMemo(() => new AuthController(authService), [authService]);
+  const authService = useMemo(
+    () => new AuthService({ apiBaseUrl: API_BASE_URL }),
+    [],
+  );
+  const authController = useMemo(
+    () => new AuthController(authService),
+    [authService],
+  );
 
-  const [bootstrapState, setBootstrapState] = useState<BootstrapState>('loading');
-  const [route, setRoute] = useState<AppRoute>('Login');
+  const [bootstrapState, setBootstrapState] =
+    useState<BootstrapState>("loading");
+  const [route, setRoute] = useState<AppRoute>("Login");
   const [routeStack, setRouteStack] = useState<NavigationStack>(
-    () => new NavigationStack('Login'),
+    () => new NavigationStack("Login"),
   );
   const [authState, setAuthState] = useState<AuthNavigationState>({
     isAuthenticated: false,
@@ -39,17 +50,26 @@ export function App(): React.JSX.Element {
       setRouteStack(new NavigationStack(result.initialRoute));
       setRoute(result.initialRoute);
       setAuthState(result.authState);
-      setBootstrapState('ready');
+      setBootstrapState("ready");
     })();
   }, [authController]);
 
-  const navigate = async (nextRoute: AppRoute, mode: 'push' | 'replace' = 'push'): Promise<void> => {
+  const navigate = async (
+    nextRoute: AppRoute,
+    mode: "push" | "replace" = "push",
+  ): Promise<void> => {
     const ensured = await authController.ensureRouteAccess(nextRoute);
 
     if (canAccessRoute(ensured, authState)) {
       const nextStack = new NavigationStack(routeStack.current());
-      routeStack.snapshot().slice(1).forEach((r) => nextStack.push(r));
-      const next = mode === 'replace' ? nextStack.replace(ensured) : nextStack.push(ensured);
+      routeStack
+        .snapshot()
+        .slice(1)
+        .forEach((r) => nextStack.push(r));
+      const next =
+        mode === "replace"
+          ? nextStack.replace(ensured)
+          : nextStack.push(ensured);
       setRouteStack(nextStack);
       setRoute(next);
       return;
@@ -66,7 +86,10 @@ export function App(): React.JSX.Element {
       return;
     }
     const nextStack = new NavigationStack(routeStack.current());
-    routeStack.snapshot().slice(1).forEach((r) => nextStack.push(r));
+    routeStack
+      .snapshot()
+      .slice(1)
+      .forEach((r) => nextStack.push(r));
     const next = nextStack.back();
     setRouteStack(nextStack);
     setRoute(next);
@@ -79,7 +102,7 @@ export function App(): React.JSX.Element {
     setRoute(result.route);
   };
 
-  if (bootstrapState === 'loading') {
+  if (bootstrapState === "loading") {
     return (
       <SafeAreaView style={styles.centered}>
         <ActivityIndicator />
@@ -88,29 +111,33 @@ export function App(): React.JSX.Element {
     );
   }
 
-  if (route === 'Login') {
+  if (route === "Login") {
     return (
       <LoginScreen
         authController={authController}
         onNavigate={(next) => {
-          void navigate(next, 'replace');
+          void navigate(next, "replace");
         }}
       />
     );
   }
 
-  if (route === 'Register') {
+  if (route === "Register") {
     return (
       <RegisterScreen
         authController={authController}
         onNavigate={(next) => {
-          void navigate(next, 'replace');
+          void navigate(next, "replace");
         }}
       />
     );
   }
 
-  const content = renderAuthenticatedContent(route, authService, authState.role);
+  const content = renderAuthenticatedContent(
+    route,
+    authService,
+    authState.role,
+  );
 
   return (
     <AuthenticatedShell
@@ -136,11 +163,17 @@ function renderAuthenticatedContent(
   authService: AuthService,
   role?: string,
 ): React.JSX.Element {
-  if (route === 'Items') {
-    return <ItemsScreen authService={authService} apiBaseUrl={API_BASE_URL} userRole={role} />;
+  if (route === "Items") {
+    return (
+      <ItemsScreen
+        authService={authService}
+        apiBaseUrl={API_BASE_URL}
+        userRole={role}
+      />
+    );
   }
 
-  if (route === 'Transactions') {
+  if (route === "Transactions") {
     return (
       <TransactionsScreen
         authService={authService}
@@ -150,11 +183,16 @@ function renderAuthenticatedContent(
     );
   }
 
-  if (route === 'Home') {
-    return <HomeDashboardScreen authService={authService} apiBaseUrl={API_BASE_URL} />;
+  if (route === "Home") {
+    return (
+      <HomeDashboardScreen
+        authService={authService}
+        apiBaseUrl={API_BASE_URL}
+      />
+    );
   }
 
-  if (route === 'AdminUsers') {
+  if (route === "AdminUsers") {
     return (
       <AdminUsersScreen
         authService={authService}
@@ -167,7 +205,9 @@ function renderAuthenticatedContent(
   return (
     <>
       <Text style={styles.contentTitle}>{route}</Text>
-      <Text style={styles.contentSubtitle}>Feature content is being migrated for this screen.</Text>
+      <Text style={styles.contentSubtitle}>
+        Feature content is being migrated for this screen.
+      </Text>
     </>
   );
 }
@@ -177,20 +217,20 @@ export default App;
 const styles = StyleSheet.create({
   centered: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     gap: 8,
   },
   loadingText: {
-    color: '#374151',
+    color: "#374151",
   },
   contentTitle: {
     fontSize: 24,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: "600",
+    color: "#111827",
     marginBottom: 8,
   },
   contentSubtitle: {
-    color: '#4b5563',
+    color: "#4b5563",
   },
 });

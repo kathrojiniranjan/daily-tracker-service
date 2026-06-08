@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Button,
@@ -7,12 +7,19 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { UserSummary } from '../../api/contracts';
-import { AuthService } from '../auth/authService';
-import { AdminService } from './adminService';
-import { AdminUsersScreenModel, AdminUsersScreenState } from './adminUsersScreenModel';
-import { EmptyState, ErrorState, LoadingState } from '../../shared/statusStates';
+} from "react-native";
+import { UserSummary } from "../../api/contracts";
+import { AuthService } from "../auth/authService";
+import { AdminService } from "./adminService";
+import {
+  AdminUsersScreenModel,
+  AdminUsersScreenState,
+} from "./adminUsersScreenModel";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from "../../shared/statusStates";
 
 const initialState: AdminUsersScreenState = {
   loading: false,
@@ -35,9 +42,10 @@ export function AdminUsersScreen({
   apiBaseUrl,
   userRole,
 }: AdminUsersScreenProps): React.JSX.Element {
-  const isAdmin = userRole === 'Admin';
+  const isAdmin = userRole === "Admin";
   const model = useMemo(
-    () => new AdminUsersScreenModel(new AdminService(authService, { apiBaseUrl })),
+    () =>
+      new AdminUsersScreenModel(new AdminService(authService, { apiBaseUrl })),
     [apiBaseUrl, authService],
   );
   const [state, setState] = useState<AdminUsersScreenState>(initialState);
@@ -59,11 +67,11 @@ export function AdminUsersScreen({
   }, [isAdmin, model]);
 
   if (!isAdmin) {
-    return <ErrorState message='Admin role required.' />;
+    return <ErrorState message="Admin role required." />;
   }
 
   if (state.loading && state.users.length === 0) {
-    return <LoadingState message='Loading admin users...' />;
+    return <LoadingState message="Loading admin users..." />;
   }
 
   return (
@@ -86,11 +94,15 @@ export function AdminUsersScreen({
         {state.loading ? <Text style={styles.meta}>Refreshing...</Text> : null}
       </View>
 
-      {state.error ? <ErrorState message={state.error} onRetry={() => void refresh()} /> : null}
-      {state.actionError ? <Text style={styles.error}>{state.actionError}</Text> : null}
+      {state.error ? (
+        <ErrorState message={state.error} onRetry={() => void refresh()} />
+      ) : null}
+      {state.actionError ? (
+        <Text style={styles.error}>{state.actionError}</Text>
+      ) : null}
 
       {state.users.length === 0 && !state.loading ? (
-        <EmptyState message='No users found.' onRetry={() => void refresh()} />
+        <EmptyState message="No users found." onRetry={() => void refresh()} />
       ) : null}
 
       <FlatList
@@ -100,11 +112,15 @@ export function AdminUsersScreen({
           <UserRow
             item={item}
             roleDraft={state.roleDrafts[item.id] ?? item.role}
-            passwordDraft={state.passwordDrafts[item.id] ?? ''}
+            passwordDraft={state.passwordDrafts[item.id] ?? ""}
             acting={state.actingUserId === item.id}
             deleting={state.deletingUserId === item.id}
-            onRoleDraft={(value) => setState(model.setRoleDraft(item.id, value))}
-            onPasswordDraft={(value) => setState(model.setPasswordDraft(item.id, value))}
+            onRoleDraft={(value) =>
+              setState(model.setRoleDraft(item.id, value))
+            }
+            onPasswordDraft={(value) =>
+              setState(model.setPasswordDraft(item.id, value))
+            }
             onAssignRole={() => {
               void (async () => {
                 try {
@@ -124,11 +140,11 @@ export function AdminUsersScreen({
               })();
             }}
             onDelete={() => {
-              Alert.alert('Delete User', `Delete user ${item.username}?`, [
-                { text: 'Cancel', style: 'cancel' },
+              Alert.alert("Delete User", `Delete user ${item.username}?`, [
+                { text: "Cancel", style: "cancel" },
                 {
-                  text: 'Delete',
-                  style: 'destructive',
+                  text: "Delete",
+                  style: "destructive",
                   onPress: () => {
                     void (async () => {
                       try {
@@ -148,7 +164,7 @@ export function AdminUsersScreen({
 
       <View style={styles.pager}>
         <Button
-          title='Previous'
+          title="Previous"
           onPress={() => {
             void (async () => {
               try {
@@ -162,7 +178,7 @@ export function AdminUsersScreen({
         />
         <Text style={styles.meta}>Page {state.page}</Text>
         <Button
-          title='Next'
+          title="Next"
           onPress={() => {
             void (async () => {
               try {
@@ -210,24 +226,36 @@ function UserRow({
       <Text style={styles.meta}>Transactions: {item.transactionCount}</Text>
 
       <TextInput
-        autoCapitalize='none'
+        autoCapitalize="none"
         style={styles.input}
-        placeholder='Role'
+        placeholder="Role"
         value={roleDraft}
         onChangeText={onRoleDraft}
       />
-      <Button title={acting ? 'Updating...' : 'Assign Role'} onPress={onAssignRole} disabled={acting || deleting} />
+      <Button
+        title={acting ? "Updating..." : "Assign Role"}
+        onPress={onAssignRole}
+        disabled={acting || deleting}
+      />
 
       <TextInput
         secureTextEntry
         style={styles.input}
-        placeholder='New Password (min 8 chars)'
+        placeholder="New Password (min 8 chars)"
         value={passwordDraft}
         onChangeText={onPasswordDraft}
       />
-      <Button title={acting ? 'Updating...' : 'Change Password'} onPress={onChangePassword} disabled={acting || deleting} />
+      <Button
+        title={acting ? "Updating..." : "Change Password"}
+        onPress={onChangePassword}
+        disabled={acting || deleting}
+      />
 
-      <Button title={deleting ? 'Deleting...' : 'Delete User'} onPress={onDelete} disabled={acting || deleting} />
+      <Button
+        title={deleting ? "Deleting..." : "Delete User"}
+        onPress={onDelete}
+        disabled={acting || deleting}
+      />
     </View>
   );
 }
@@ -238,37 +266,37 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   card: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
+    borderColor: "#e5e7eb",
     borderRadius: 10,
     padding: 12,
     gap: 6,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: "600",
+    color: "#111827",
   },
   userTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontWeight: "600",
+    color: "#111827",
   },
   meta: {
-    color: '#4b5563',
+    color: "#4b5563",
   },
   error: {
-    color: '#b91c1c',
+    color: "#b91c1c",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#d1d5db',
+    borderColor: "#d1d5db",
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -278,9 +306,9 @@ const styles = StyleSheet.create({
     height: 8,
   },
   pager: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: 10,
     marginTop: 4,
   },

@@ -1,4 +1,4 @@
-import { SessionStorageAdapter } from './sessionStorage';
+import { SessionStorageAdapter } from "./sessionStorage";
 
 export interface ReactNativeAsyncStorageLike {
   getItem(key: string): Promise<string | null>;

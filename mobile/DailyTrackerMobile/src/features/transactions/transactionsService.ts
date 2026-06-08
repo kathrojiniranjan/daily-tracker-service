@@ -5,8 +5,8 @@ import {
   Transaction,
   UpdateTransactionRequest,
   parityApiRoutes,
-} from '../../api/contracts';
-import { AuthService } from '../auth/authService';
+} from "../../api/contracts";
+import { AuthService } from "../auth/authService";
 
 export class TransactionsService {
   private readonly baseUrl: string;
@@ -15,7 +15,10 @@ export class TransactionsService {
     private readonly auth: AuthService,
     options: { apiBaseUrl?: string } = {},
   ) {
-    this.baseUrl = (options.apiBaseUrl ?? 'http://localhost:5088').replace(/\/$/, '');
+    this.baseUrl = (options.apiBaseUrl ?? "http://localhost:5088").replace(
+      /\/$/,
+      "",
+    );
   }
 
   async getRangePaged(
@@ -35,13 +38,13 @@ export class TransactionsService {
       pageSize: String(pageSize),
     });
     if (userId) {
-      query.set('userId', userId);
+      query.set("userId", userId);
     }
 
     const response = await fetch(
       `${this.baseUrl}${parityApiRoutes.transactions}/paged?${query.toString()}`,
       {
-        method: 'GET',
+        method: "GET",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -50,31 +53,43 @@ export class TransactionsService {
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to load transactions (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to load transactions (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as PagedResult<Transaction>;
   }
 
-  async getRange(from: string, to: string, userId?: string): Promise<Transaction[]> {
+  async getRange(
+    from: string,
+    to: string,
+    userId?: string,
+  ): Promise<Transaction[]> {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
     const query = new URLSearchParams({ from, to });
     if (userId) {
-      query.set('userId', userId);
+      query.set("userId", userId);
     }
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.transactions}?${query.toString()}`, {
-      method: 'GET',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.transactions}?${query.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
       },
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to load transactions range (HTTP ${response.status}).`);
+      throw new Error(
+        detail ??
+          `Failed to load transactions range (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as Transaction[];
@@ -84,39 +99,52 @@ export class TransactionsService {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.transactions}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.transactions}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to create transaction (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to create transaction (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as Transaction;
   }
 
-  async update(id: string, body: UpdateTransactionRequest): Promise<Transaction> {
+  async update(
+    id: string,
+    body: UpdateTransactionRequest,
+  ): Promise<Transaction> {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.transactions}/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.transactions}/${id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
       },
-      body: JSON.stringify(body),
-    });
+    );
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to update transaction (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to update transaction (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as Transaction;
@@ -126,27 +154,10 @@ export class TransactionsService {
     await this.auth.restoreSession();
     const token = this.auth.getSession()?.token;
 
-    const response = await fetch(`${this.baseUrl}${parityApiRoutes.transactions}/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    if (!response.ok) {
-      const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to delete transaction (HTTP ${response.status}).`);
-    }
-  }
-
-  async getMonthlySummary(year: number, month: number): Promise<MonthlySummary> {
-    await this.auth.restoreSession();
-    const token = this.auth.getSession()?.token;
-
     const response = await fetch(
-      `${this.baseUrl}${parityApiRoutes.transactions}/summary/${year}/${month}`,
+      `${this.baseUrl}${parityApiRoutes.transactions}/${id}`,
       {
-        method: 'GET',
+        method: "DELETE",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
@@ -155,7 +166,34 @@ export class TransactionsService {
 
     if (!response.ok) {
       const detail = await safeReadError(response);
-      throw new Error(detail ?? `Failed to load monthly summary (HTTP ${response.status}).`);
+      throw new Error(
+        detail ?? `Failed to delete transaction (HTTP ${response.status}).`,
+      );
+    }
+  }
+
+  async getMonthlySummary(
+    year: number,
+    month: number,
+  ): Promise<MonthlySummary> {
+    await this.auth.restoreSession();
+    const token = this.auth.getSession()?.token;
+
+    const response = await fetch(
+      `${this.baseUrl}${parityApiRoutes.transactions}/summary/${year}/${month}`,
+      {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const detail = await safeReadError(response);
+      throw new Error(
+        detail ?? `Failed to load monthly summary (HTTP ${response.status}).`,
+      );
     }
 
     return (await response.json()) as MonthlySummary;

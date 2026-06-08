@@ -1,5 +1,5 @@
-import { AdminSummary, UserSummary } from '../../api/contracts';
-import { AdminService } from './adminService';
+import { AdminSummary, UserSummary } from "../../api/contracts";
+import { AdminService } from "./adminService";
 
 export interface AdminUsersScreenState {
   loading: boolean;
@@ -78,13 +78,14 @@ export class AdminUsersScreenModel {
           this.state.roleDrafts[u.id] = u.role;
         }
         if (this.state.passwordDrafts[u.id] === undefined) {
-          this.state.passwordDrafts[u.id] = '';
+          this.state.passwordDrafts[u.id] = "";
         }
       });
 
       return this.getState();
     } catch (error) {
-      this.state.error = error instanceof Error ? error.message : 'Failed to load admin users.';
+      this.state.error =
+        error instanceof Error ? error.message : "Failed to load admin users.";
       throw error;
     } finally {
       this.state.loading = false;
@@ -92,7 +93,10 @@ export class AdminUsersScreenModel {
   }
 
   canGoNext(): boolean {
-    return this.state.page * this.state.pageSize < this.state.totalCount && !this.state.loading;
+    return (
+      this.state.page * this.state.pageSize < this.state.totalCount &&
+      !this.state.loading
+    );
   }
 
   canGoPrevious(): boolean {
@@ -116,10 +120,10 @@ export class AdminUsersScreenModel {
   }
 
   async assignRole(userId: string): Promise<AdminUsersScreenState> {
-    const role = (this.state.roleDrafts[userId] ?? '').trim();
+    const role = (this.state.roleDrafts[userId] ?? "").trim();
     if (!role) {
-      this.state.actionError = 'Role cannot be empty.';
-      throw new Error('Role cannot be empty.');
+      this.state.actionError = "Role cannot be empty.";
+      throw new Error("Role cannot be empty.");
     }
 
     this.state.actingUserId = userId;
@@ -129,7 +133,8 @@ export class AdminUsersScreenModel {
       await this.admin.assignRole(userId, role);
       return this.load();
     } catch (error) {
-      this.state.actionError = error instanceof Error ? error.message : 'Failed to assign role.';
+      this.state.actionError =
+        error instanceof Error ? error.message : "Failed to assign role.";
       throw error;
     } finally {
       this.state.actingUserId = undefined;
@@ -137,10 +142,10 @@ export class AdminUsersScreenModel {
   }
 
   async changePassword(userId: string): Promise<AdminUsersScreenState> {
-    const password = this.state.passwordDrafts[userId] ?? '';
+    const password = this.state.passwordDrafts[userId] ?? "";
     if (password.length < 8) {
-      this.state.actionError = 'Password must be at least 8 characters.';
-      throw new Error('Password must be at least 8 characters.');
+      this.state.actionError = "Password must be at least 8 characters.";
+      throw new Error("Password must be at least 8 characters.");
     }
 
     this.state.actingUserId = userId;
@@ -148,10 +153,11 @@ export class AdminUsersScreenModel {
 
     try {
       await this.admin.changePassword(userId, password);
-      this.state.passwordDrafts[userId] = '';
+      this.state.passwordDrafts[userId] = "";
       return this.getState();
     } catch (error) {
-      this.state.actionError = error instanceof Error ? error.message : 'Failed to change password.';
+      this.state.actionError =
+        error instanceof Error ? error.message : "Failed to change password.";
       throw error;
     } finally {
       this.state.actingUserId = undefined;
@@ -166,12 +172,17 @@ export class AdminUsersScreenModel {
       await this.admin.deleteUser(userId);
       delete this.state.roleDrafts[userId];
       delete this.state.passwordDrafts[userId];
-      if ((this.state.totalCount - 1) <= (this.state.page - 1) * this.state.pageSize && this.state.page > 1) {
+      if (
+        this.state.totalCount - 1 <=
+          (this.state.page - 1) * this.state.pageSize &&
+        this.state.page > 1
+      ) {
         this.state.page -= 1;
       }
       return this.load();
     } catch (error) {
-      this.state.actionError = error instanceof Error ? error.message : 'Failed to delete user.';
+      this.state.actionError =
+        error instanceof Error ? error.message : "Failed to delete user.";
       throw error;
     } finally {
       this.state.deletingUserId = undefined;

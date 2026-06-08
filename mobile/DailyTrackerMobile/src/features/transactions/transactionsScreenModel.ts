@@ -1,5 +1,5 @@
-import { Transaction } from '../../api/contracts';
-import { TransactionsService } from './transactionsService';
+import { Transaction } from "../../api/contracts";
+import { TransactionsService } from "./transactionsService";
 
 export interface TransactionsFilterValues {
   from: string;
@@ -82,20 +82,20 @@ export class TransactionsScreenModel {
     pageSize: 20,
     totalCount: 0,
     createValues: {
-      dailyItemId: '',
-      quantity: '',
-      amount: '',
+      dailyItemId: "",
+      quantity: "",
+      amount: "",
       transactionDate: toIsoDate(new Date()),
-      notes: '',
+      notes: "",
     },
     createErrors: {},
     creating: false,
     editingTransactionId: null,
     editValues: {
-      quantity: '',
-      amount: '',
+      quantity: "",
+      amount: "",
       transactionDate: toIsoDate(new Date()),
-      notes: '',
+      notes: "",
     },
     editErrors: {},
     savingEdit: false,
@@ -143,7 +143,7 @@ export class TransactionsScreenModel {
       quantity: String(item.quantity),
       amount: String(item.amount),
       transactionDate: item.transactionDate,
-      notes: item.notes ?? '',
+      notes: item.notes ?? "",
     };
     this.state.editErrors = {};
     return this.getState();
@@ -189,7 +189,10 @@ export class TransactionsScreenModel {
   }
 
   canDelete(id: string): boolean {
-    return this.state.deletingTransactionId === null || this.state.deletingTransactionId !== id;
+    return (
+      this.state.deletingTransactionId === null ||
+      this.state.deletingTransactionId !== id
+    );
   }
 
   setCreateDailyItemId(dailyItemId: string): TransactionsScreenState {
@@ -258,7 +261,7 @@ export class TransactionsScreenModel {
     if (hasFilterErrors(errors)) {
       this.state.loading = false;
       this.state.filterErrors = errors;
-      throw new Error('Please fix the date range.');
+      throw new Error("Please fix the date range.");
     }
 
     try {
@@ -267,12 +270,14 @@ export class TransactionsScreenModel {
         this.state.filters.to,
         this.state.page,
         this.state.pageSize,
-        this.isAdmin ? this.state.filters.userId.trim() || undefined : undefined,
+        this.isAdmin
+          ? this.state.filters.userId.trim() || undefined
+          : undefined,
       );
       this.state.items = result.items;
       this.state.totalCount = result.totalCount;
 
-      const [year, month] = this.state.filters.to.split('-').map(Number);
+      const [year, month] = this.state.filters.to.split("-").map(Number);
       if (year && month) {
         const summary = await this.service.getMonthlySummary(year, month);
         this.state.monthlySummary = {
@@ -286,7 +291,7 @@ export class TransactionsScreenModel {
       return this.getState();
     } catch (error) {
       this.state.error =
-        error instanceof Error ? error.message : 'Failed to load transactions.';
+        error instanceof Error ? error.message : "Failed to load transactions.";
       throw error;
     } finally {
       this.state.loading = false;
@@ -294,7 +299,10 @@ export class TransactionsScreenModel {
   }
 
   canGoNext(): boolean {
-    return this.state.page * this.state.pageSize < this.state.totalCount && !this.state.loading;
+    return (
+      this.state.page * this.state.pageSize < this.state.totalCount &&
+      !this.state.loading
+    );
   }
 
   canGoPrevious(): boolean {
@@ -319,13 +327,13 @@ export class TransactionsScreenModel {
 
   async submitCreate(): Promise<TransactionsScreenState> {
     if (this.state.creating) {
-      throw new Error('Create already in progress.');
+      throw new Error("Create already in progress.");
     }
 
     const createErrors = validateCreate(this.state.createValues);
     if (hasCreateErrors(createErrors)) {
       this.state.createErrors = createErrors;
-      throw new Error('Please fix the highlighted fields.');
+      throw new Error("Please fix the highlighted fields.");
     }
 
     this.state.creating = true;
@@ -341,11 +349,11 @@ export class TransactionsScreenModel {
       });
 
       this.state.createValues = {
-        dailyItemId: '',
-        quantity: '',
-        amount: '',
+        dailyItemId: "",
+        quantity: "",
+        amount: "",
         transactionDate: toIsoDate(new Date()),
-        notes: '',
+        notes: "",
       };
 
       this.state.page = 1;
@@ -360,7 +368,9 @@ export class TransactionsScreenModel {
       return this.getState();
     } catch (error) {
       this.state.createErrors.form =
-        error instanceof Error ? error.message : 'Failed to create transaction.';
+        error instanceof Error
+          ? error.message
+          : "Failed to create transaction.";
       throw error;
     } finally {
       this.state.creating = false;
@@ -369,16 +379,16 @@ export class TransactionsScreenModel {
 
   async submitEdit(): Promise<TransactionsScreenState> {
     if (!this.state.editingTransactionId) {
-      throw new Error('No transaction selected for editing.');
+      throw new Error("No transaction selected for editing.");
     }
     if (this.state.savingEdit) {
-      throw new Error('Edit already in progress.');
+      throw new Error("Edit already in progress.");
     }
 
     const editErrors = validateEdit(this.state.editValues);
     if (hasEditErrors(editErrors)) {
       this.state.editErrors = editErrors;
-      throw new Error('Please fix the highlighted fields.');
+      throw new Error("Please fix the highlighted fields.");
     }
 
     this.state.savingEdit = true;
@@ -404,7 +414,9 @@ export class TransactionsScreenModel {
       return this.getState();
     } catch (error) {
       this.state.editErrors.form =
-        error instanceof Error ? error.message : 'Failed to update transaction.';
+        error instanceof Error
+          ? error.message
+          : "Failed to update transaction.";
       throw error;
     } finally {
       this.state.savingEdit = false;
@@ -413,7 +425,7 @@ export class TransactionsScreenModel {
 
   async deleteTransaction(id: string): Promise<TransactionsScreenState> {
     if (this.state.deletingTransactionId !== null) {
-      throw new Error('Delete already in progress.');
+      throw new Error("Delete already in progress.");
     }
 
     this.state.deletingTransactionId = id;
@@ -438,7 +450,9 @@ export class TransactionsScreenModel {
       return this.getState();
     } catch (error) {
       this.state.deleteError =
-        error instanceof Error ? error.message : 'Failed to delete transaction.';
+        error instanceof Error
+          ? error.message
+          : "Failed to delete transaction.";
       throw error;
     } finally {
       this.state.deletingTransactionId = null;
@@ -446,18 +460,20 @@ export class TransactionsScreenModel {
   }
 }
 
-function validateFilters(values: TransactionsFilterValues): TransactionsFilterErrors {
+function validateFilters(
+  values: TransactionsFilterValues,
+): TransactionsFilterErrors {
   const next: TransactionsFilterErrors = {};
 
   if (!isIsoDate(values.from)) {
-    next.from = 'From date must use YYYY-MM-DD.';
+    next.from = "From date must use YYYY-MM-DD.";
   }
   if (!isIsoDate(values.to)) {
-    next.to = 'To date must use YYYY-MM-DD.';
+    next.to = "To date must use YYYY-MM-DD.";
   }
 
   if (!next.from && !next.to && values.from > values.to) {
-    next.range = 'From date cannot be after To date.';
+    next.range = "From date cannot be after To date.";
   }
 
   return next;
@@ -467,36 +483,38 @@ function hasFilterErrors(errors: TransactionsFilterErrors): boolean {
   return Boolean(errors.from || errors.to || errors.range || errors.form);
 }
 
-function validateCreate(values: CreateTransactionValues): CreateTransactionErrors {
+function validateCreate(
+  values: CreateTransactionValues,
+): CreateTransactionErrors {
   const next: CreateTransactionErrors = {};
 
   const dailyItemId = Number(values.dailyItemId);
   if (!values.dailyItemId.trim()) {
-    next.dailyItemId = 'Daily item id is required.';
+    next.dailyItemId = "Daily item id is required.";
   } else if (!Number.isInteger(dailyItemId) || dailyItemId <= 0) {
-    next.dailyItemId = 'Daily item id must be a positive integer.';
+    next.dailyItemId = "Daily item id must be a positive integer.";
   }
 
   const quantity = Number(values.quantity);
   if (!values.quantity.trim()) {
-    next.quantity = 'Quantity is required.';
+    next.quantity = "Quantity is required.";
   } else if (Number.isNaN(quantity) || quantity <= 0) {
-    next.quantity = 'Quantity must be greater than 0.';
+    next.quantity = "Quantity must be greater than 0.";
   }
 
   const amount = Number(values.amount);
   if (!values.amount.trim()) {
-    next.amount = 'Amount is required.';
+    next.amount = "Amount is required.";
   } else if (Number.isNaN(amount) || amount < 0) {
-    next.amount = 'Amount must be 0 or greater.';
+    next.amount = "Amount must be 0 or greater.";
   }
 
   if (!isIsoDate(values.transactionDate)) {
-    next.transactionDate = 'Transaction date must use YYYY-MM-DD.';
+    next.transactionDate = "Transaction date must use YYYY-MM-DD.";
   }
 
   if (values.notes.length > 500) {
-    next.notes = 'Notes cannot exceed 500 characters.';
+    next.notes = "Notes cannot exceed 500 characters.";
   }
 
   return next;
@@ -505,11 +523,11 @@ function validateCreate(values: CreateTransactionValues): CreateTransactionError
 function hasCreateErrors(errors: CreateTransactionErrors): boolean {
   return Boolean(
     errors.dailyItemId ||
-      errors.quantity ||
-      errors.amount ||
-      errors.transactionDate ||
-      errors.notes ||
-      errors.form,
+    errors.quantity ||
+    errors.amount ||
+    errors.transactionDate ||
+    errors.notes ||
+    errors.form,
   );
 }
 
@@ -518,24 +536,24 @@ function validateEdit(values: EditTransactionValues): EditTransactionErrors {
 
   const quantity = Number(values.quantity);
   if (!values.quantity.trim()) {
-    next.quantity = 'Quantity is required.';
+    next.quantity = "Quantity is required.";
   } else if (Number.isNaN(quantity) || quantity <= 0) {
-    next.quantity = 'Quantity must be greater than 0.';
+    next.quantity = "Quantity must be greater than 0.";
   }
 
   const amount = Number(values.amount);
   if (!values.amount.trim()) {
-    next.amount = 'Amount is required.';
+    next.amount = "Amount is required.";
   } else if (Number.isNaN(amount) || amount < 0) {
-    next.amount = 'Amount must be 0 or greater.';
+    next.amount = "Amount must be 0 or greater.";
   }
 
   if (!isIsoDate(values.transactionDate)) {
-    next.transactionDate = 'Transaction date must use YYYY-MM-DD.';
+    next.transactionDate = "Transaction date must use YYYY-MM-DD.";
   }
 
   if (values.notes.length > 500) {
-    next.notes = 'Notes cannot exceed 500 characters.';
+    next.notes = "Notes cannot exceed 500 characters.";
   }
 
   return next;
@@ -544,10 +562,10 @@ function validateEdit(values: EditTransactionValues): EditTransactionErrors {
 function hasEditErrors(errors: EditTransactionErrors): boolean {
   return Boolean(
     errors.quantity ||
-      errors.amount ||
-      errors.transactionDate ||
-      errors.notes ||
-      errors.form,
+    errors.amount ||
+    errors.transactionDate ||
+    errors.notes ||
+    errors.form,
   );
 }
 
@@ -564,13 +582,13 @@ function currentMonthRange(): TransactionsFilterValues {
   return {
     from: toIsoDate(first),
     to: toIsoDate(last),
-    userId: '',
+    userId: "",
   };
 }
 
 function toIsoDate(date: Date): string {
   const yyyy = date.getFullYear();
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 }

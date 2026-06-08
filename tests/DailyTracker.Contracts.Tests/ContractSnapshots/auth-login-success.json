@@ -1,0 +1,5 @@
+{
+  "endpoint": "POST /api/auth/login",
+  "status": 200,
+  "note": "placeholder snapshot to be replaced by baseline capture"
+}

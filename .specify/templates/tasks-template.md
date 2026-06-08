@@ -1,5 +1,4 @@
 ---
-
 description: "Task list template for feature implementation"
 ---
 
@@ -71,7 +70,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T009 Setup environment configuration management
 - [ ] T010 Define API contract update checklist (DTO/error shape/validation)
 - [ ] T011 Define backward compatibility checks for existing web clients and
-  planned mobile clients
+      planned mobile clients
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -87,8 +86,8 @@ Examples of foundational tasks (adjust based on your project):
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T012 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T013 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T012 [P] [US1] Contract test for [endpoint] in tests/contract/test\_[name].py
+- [ ] T013 [P] [US1] Integration test for [user journey] in tests/integration/test\_[name].py
 
 ### Implementation for User Story 1
 
@@ -112,8 +111,8 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T021 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T022 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T021 [P] [US2] Contract test for [endpoint] in tests/contract/test\_[name].py
+- [ ] T022 [P] [US2] Integration test for [user journey] in tests/integration/test\_[name].py
 
 ### Implementation for User Story 2
 
@@ -134,8 +133,8 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
-- [ ] T027 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
-- [ ] T028 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
+- [ ] T027 [P] [US3] Contract test for [endpoint] in tests/contract/test\_[name].py
+- [ ] T028 [P] [US3] Integration test for [user journey] in tests/integration/test\_[name].py
 
 ### Implementation for User Story 3
 

@@ -1,0 +1,10 @@
+{
+  "name": "daily-tracker-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "React Native parity baseline workspace",
+  "scripts": {
+    "lint": "echo 'TODO: add mobile lint'",
+    "test": "node --test tests/parity/*.test.js"
+  }
+}

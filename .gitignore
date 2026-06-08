@@ -14,3 +14,9 @@ dist/
 .angular/
 *.log
 .env
+.env*
+build/
+coverage/
+Thumbs.db
+*.tmp
+*.swp

@@ -6,19 +6,19 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/DailyTrackerService/bin/Debug/net9.0/DailyTrackerService.dll",
+      "program": "${workspaceFolder}/src/DailyTracker.Api/bin/Debug/net9.0/DailyTracker.Api.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/DailyTrackerService",
+      "cwd": "${workspaceFolder}/src/DailyTracker.Api",
       "stopAtEntry": false,
       "serverReadyAction": {
         "action": "debugWithChrome",
         "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
         "uriFormat": "%s/swagger",
-        "webRoot": "${workspaceFolder}/DailyTrackerService"
+        "webRoot": "${workspaceFolder}/src/DailyTracker.Api"
       },
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5226",
+        "ASPNETCORE_URLS": "http://localhost:5259",
         "DOTNET_ROOT": "/usr/local/share/dotnet",
         "PATH": "/usr/local/share/dotnet:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
       }

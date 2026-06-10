@@ -1,5 +1,1 @@
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
-at specs/001-split-layers-rn-port/plan.md
-<!-- SPECKIT END -->
+No pinned feature plan is currently active for this repository.

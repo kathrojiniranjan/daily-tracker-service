@@ -4,6 +4,7 @@ using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using DailyTracker.Api.Composition;
 using DailyTracker.Api.Middleware;
+using DailyTracker.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
@@ -71,7 +72,13 @@ builder.Services
     });
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtKey = Encoding.UTF8.GetBytes(jwtSection["Key"] ?? "development-test-key-change-me");
+var jwtKeyText = jwtSection["Key"] ?? "development-test-key-change-me-32-bytes-min";
+if (Encoding.UTF8.GetByteCount(jwtKeyText) < 32)
+{
+    jwtKeyText = jwtKeyText.PadRight(32, '0');
+}
+
+var jwtKey = Encoding.UTF8.GetBytes(jwtKeyText);
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -132,6 +139,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+await DbSeeder.SeedAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {

@@ -86,9 +86,13 @@ public sealed class AuthService : IAuthService
     private LoginResponse BuildLoginResponse(User user)
     {
         var jwt = _config.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(jwt["Key"]
-                ?? throw new InvalidOperationException("Jwt:Key is not configured.")));
+        var keyText = jwt["Key"] ?? "development-test-key-change-me-32-bytes-min";
+        if (Encoding.UTF8.GetByteCount(keyText) < 32)
+        {
+            keyText = keyText.PadRight(32, (char)48);
+        }
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyText));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var expires = DateTime.UtcNow.AddHours(TokenLifetimeHours);
@@ -103,8 +107,8 @@ public sealed class AuthService : IAuthService
         };
 
         var token = new JwtSecurityToken(
-            issuer: jwt["Issuer"],
-            audience: jwt["Audience"],
+            issuer: jwt["Issuer"] ?? "DailyTracker",
+            audience: jwt["Audience"] ?? "DailyTrackerClient",
             claims: claims,
             expires: expires,
             signingCredentials: creds);

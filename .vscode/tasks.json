@@ -1,27 +1,235 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "build",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/DailyTrackerService/DailyTrackerService.csproj",
-        "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
-      ],
-      "options": {
-        "env": {
-          "DOTNET_ROOT": "/usr/local/share/dotnet",
-          "PATH": "/usr/local/share/dotnet:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-        }
-      },
-      "problemMatcher": "$msCompile",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build",
+			"command": "dotnet",
+			"type": "process",
+			"args": [
+				"build",
+				"${workspaceFolder}/src/DailyTracker.Api/DailyTracker.Api.csproj",
+				"/property:GenerateFullPaths=true",
+				"/consoleloggerparameters:NoSummary"
+			],
+			"options": {
+				"env": {
+					"DOTNET_ROOT": "/usr/local/share/dotnet",
+					"PATH": "/usr/local/share/dotnet:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+				}
+			},
+			"problemMatcher": "$msCompile",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "patch-authservice-jwt-defaults",
+			"type": "shell",
+			"command": "perl",
+			"args": [
+				"-i",
+				"-pe",
+				"s/jwt\\[\"Key\"\\]\\s*\\?\\?\\s*throw new InvalidOperationException\\(\"Jwt:Key is not configured\\.\"\\)/jwt[\"Key\"] ?? \"development-test-key-change-me\"/g; s/issuer:\\s*jwt\\[\"Issuer\"\\],/issuer: jwt[\"Issuer\"] ?? \"DailyTracker\",/g; s/audience:\\s*jwt\\[\"Audience\"\\],/audience: jwt[\"Audience\"] ?? \"DailyTrackerClient\",/g",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "check-authservice-jwt-lines",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"grep -n \"Jwt:Key is not configured\\|development-test-key-change-me\\|issuer: jwt\\|audience: jwt\" src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "patch-authservice-jwt-key-line",
+			"type": "shell",
+			"command": "perl",
+			"args": [
+				"-i",
+				"-pe",
+				"s/\\?\\?\\s*throw new InvalidOperationException\\(\"Jwt:Key is not configured\\.\"\\)/?? \"development-test-key-change-me\"/g",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "check-authservice-jwt-lines-2",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"grep -n \"Jwt:Key is not configured\\|development-test-key-change-me\\|issuer: jwt\\|audience: jwt\" src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "build-new-api-after-jwt-fix",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"src/DailyTracker.Api/DailyTracker.Api.csproj"
+			]
+		},
+		{
+			"label": "show-authservice-jwt-block",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"sed -n '80,120p' src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "patch-jwt-key-length-guard",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"perl -0777 -i -pe \"s@        var key = new SymmetricSecurityKey\\(\\n            Encoding.UTF8.GetBytes\\(jwt\\[\\\"Key\\\"\\]\\n                \\?\\? \\\"development-test-key-change-me\\\"\\)\\);\\n        var creds = new SigningCredentials\\(key, SecurityAlgorithms.HmacSha256\\);@        var keyText = jwt[\\\"Key\\\"] ?? \\\"development-test-key-change-me-32-bytes-min\\\";\\n        if (Encoding.UTF8.GetByteCount(keyText) < 32)\\n        {\\n            keyText = keyText.PadRight(32, '0');\\n        }\\n\\n        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyText));\\n        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);@s\" src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "show-authservice-jwt-block-after",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"sed -n '84,122p' src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "fix-padright-char-literal",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"perl -i -pe \"s/PadRight\\(32, 0\\)/PadRight(32, '0')/g\" src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "build-api-after-key-size-fix",
+			"type": "shell",
+			"command": "dotnet",
+			"args": [
+				"build",
+				"src/DailyTracker.Api/DailyTracker.Api.csproj"
+			]
+		},
+		{
+			"label": "show-padright-line",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"nl -ba src/DailyTracker.Application/UseCases/AuthService.cs | sed -n '88,96p'"
+			]
+		},
+		{
+			"label": "fix-padright-with-char-cast",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"perl -i -pe 's/PadRight\\(32, 0\\)/PadRight(32, (char)48)/g' src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "fix-padright-char-cast-direct",
+			"type": "shell",
+			"command": "perl",
+			"args": [
+				"-i",
+				"-pe",
+				"s/PadRight\\(32, 0\\)/PadRight(32, (char)48)/g",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/src/DailyTracker.Application/UseCases/AuthService.cs"
+			]
+		},
+		{
+			"label": "verify-and-build-after-padright-fix",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"nl -ba src/DailyTracker.Application/UseCases/AuthService.cs | sed -n '88,96p' && dotnet build src/DailyTracker.Api/DailyTracker.Api.csproj"
+			]
+		},
+		{
+			"label": "compare-dbseeders",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"printf '--- new ---\\n'; sed -n '1,220p' src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs; printf '\\n--- old ---\\n'; sed -n '1,260p' DailyTrackerService/Data/DbSeeder.cs"
+			]
+		},
+		{
+			"label": "show-new-dbseder",
+			"type": "shell",
+			"command": "sed",
+			"args": [
+				"-n",
+				"1,220p",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs"
+			]
+		},
+		{
+			"label": "show-old-dbseeder",
+			"type": "shell",
+			"command": "sed",
+			"args": [
+				"-n",
+				"1,260p",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/DailyTrackerService/Data/DbSeeder.cs"
+			]
+		},
+		{
+			"label": "rewrite-layered-dbseeder",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"cat > src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs <<'EOF'\nusing DailyTracker.Domain.Entities;\nusing Microsoft.AspNetCore.Identity;\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.Extensions.DependencyInjection;\n\nnamespace DailyTracker.Infrastructure.Persistence;\n\n/// <summary>\n/// Idempotent database seeder. Safe to invoke on every application startup.\n/// </summary>\npublic static class DbSeeder\n{\n    private const string DevPassword = \"Password123!\";\n\n    public static async Task SeedAsync(IServiceProvider services)\n    {\n        using var scope = services.CreateScope();\n        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();\n\n        // No migrations exist yet in the layered project, so create the schema\n        // directly for local development.\n        await db.Database.EnsureCreatedAsync();\n\n        await SeedRolesAsync(db);\n        await db.SaveChangesAsync();\n\n        await SeedUsersAsync(db);\n        await SeedSystemItemsAsync(db);\n        await PromoteLegacyUserItemsAsync(db);\n\n        await db.SaveChangesAsync();\n    }\n\n    private static async Task SeedRolesAsync(AppDbContext db)\n    {\n        if (await db.Roles.AnyAsync())\n        {\n            return;\n        }\n\n        await db.Roles.AddRangeAsync(\n            new Role { Name = \"Admin\" },\n            new Role { Name = \"User\" }\n        );\n    }\n\n    private static async Task SeedUsersAsync(AppDbContext db)\n    {\n        if (await db.Users.AnyAsync())\n        {\n            return;\n        }\n\n        var adminRoleId = await db.Roles\n            .Where(role => role.Name == \"Admin\")\n            .Select(role => role.Id)\n            .FirstAsync();\n        var userRoleId = await db.Roles\n            .Where(role => role.Name == \"User\")\n            .Select(role => role.Id)\n            .FirstAsync();\n\n        var hasher = new PasswordHasher<User>();\n\n        var admin = new User\n        {\n            Username = \"admin\",\n            Email = \"admin@local\",\n            RoleId = adminRoleId,\n        };\n        admin.PasswordHash = hasher.HashPassword(admin, DevPassword);\n\n        var user = new User\n        {\n            Username = \"user\",\n            Email = \"user@local\",\n            RoleId = userRoleId,\n        };\n        user.PasswordHash = hasher.HashPassword(user, DevPassword);\n\n        var user2 = new User\n        {\n            Username = \"user2\",\n            Email = \"user2@local\",\n            RoleId = userRoleId,\n        };\n        user2.PasswordHash = hasher.HashPassword(user2, DevPassword);\n\n        await db.Users.AddRangeAsync(admin, user, user2);\n    }\n\n    private static async Task SeedSystemItemsAsync(AppDbContext db)\n    {\n        if (await db.DailyItems.AnyAsync(item => item.IsSystem))\n        {\n            return;\n        }\n\n        var items = new[]\n        {\n            new DailyItem { Name = \"Milk\", Unit = \"L\", DefaultPrice = 60m, IsSystem = true },\n            new DailyItem { Name = \"Bread\", Unit = \"pcs\", DefaultPrice = 30m, IsSystem = true },\n            new DailyItem { Name = \"Petrol\", Unit = \"L\", DefaultPrice = 105m, IsSystem = true },\n            new DailyItem { Name = \"Eggs\", Unit = \"pcs\", DefaultPrice = 7m, IsSystem = true },\n            new DailyItem { Name = \"Vegetables\", Unit = \"kg\", DefaultPrice = 50m, IsSystem = true },\n        };\n\n        await db.DailyItems.AddRangeAsync(items);\n    }\n\n    private static async Task PromoteLegacyUserItemsAsync(AppDbContext db)\n    {\n        var adminIds = await db.Users\n            .Where(user => user.Role.Name == \"Admin\")\n            .Select(user => user.Id)\n            .ToListAsync();\n\n        if (adminIds.Count == 0)\n        {\n            return;\n        }\n\n        var legacyItems = await db.DailyItems\n            .Where(item => !item.IsSystem\n                && item.OwnerUserId != null\n                && adminIds.Contains(item.OwnerUserId.Value))\n            .ToListAsync();\n\n        foreach (var item in legacyItems)\n        {\n            item.IsSystem = true;\n            item.OwnerUserId = null;\n        }\n    }\n}\nEOF\nperl -0pi -e 's#<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"9\\.0\\.16\" />#<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"9.0.16\" />\\n    <PackageReference Include=\"Microsoft.Extensions.Identity.Core\" Version=\"9.0.7\" />#' src/DailyTracker.Infrastructure/DailyTracker.Infrastructure.csproj"
+			]
+		},
+		{
+			"label": "verify-layered-dbseeder-and-csproj",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"sed -n '1,260p' src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs && printf '\\n---CSProj---\\n' && sed -n '1,120p' src/DailyTracker.Infrastructure/DailyTracker.Infrastructure.csproj"
+			]
+		},
+		{
+			"label": "rewrite-layered-dbseeder-only",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"cat <<'EOF' > src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs\nusing DailyTracker.Domain.Entities;\nusing Microsoft.AspNetCore.Identity;\nusing Microsoft.EntityFrameworkCore;\nusing Microsoft.Extensions.DependencyInjection;\n\nnamespace DailyTracker.Infrastructure.Persistence;\n\n/// <summary>\n/// Idempotent database seeder. Safe to invoke on every application startup.\n/// </summary>\npublic static class DbSeeder\n{\n    private const string DevPassword = \"Password123!\";\n\n    public static async Task SeedAsync(IServiceProvider services)\n    {\n        using var scope = services.CreateScope();\n        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();\n\n        // No migrations exist yet in the layered project, so create the schema\n        // directly for local development.\n        await db.Database.EnsureCreatedAsync();\n\n        await SeedRolesAsync(db);\n        await db.SaveChangesAsync();\n\n        await SeedUsersAsync(db);\n        await SeedSystemItemsAsync(db);\n        await PromoteLegacyUserItemsAsync(db);\n\n        await db.SaveChangesAsync();\n    }\n\n    private static async Task SeedRolesAsync(AppDbContext db)\n    {\n        if (await db.Roles.AnyAsync())\n        {\n            return;\n        }\n\n        await db.Roles.AddRangeAsync(\n            new Role { Name = \"Admin\" },\n            new Role { Name = \"User\" }\n        );\n    }\n\n    private static async Task SeedUsersAsync(AppDbContext db)\n    {\n        if (await db.Users.AnyAsync())\n        {\n            return;\n        }\n\n        var adminRoleId = await db.Roles\n            .Where(role => role.Name == \"Admin\")\n            .Select(role => role.Id)\n            .FirstAsync();\n        var userRoleId = await db.Roles\n            .Where(role => role.Name == \"User\")\n            .Select(role => role.Id)\n            .FirstAsync();\n\n        var hasher = new PasswordHasher<User>();\n\n        var admin = new User\n        {\n            Username = \"admin\",\n            Email = \"admin@local\",\n            RoleId = adminRoleId,\n        };\n        admin.PasswordHash = hasher.HashPassword(admin, DevPassword);\n\n        var user = new User\n        {\n            Username = \"user\",\n            Email = \"user@local\",\n            RoleId = userRoleId,\n        };\n        user.PasswordHash = hasher.HashPassword(user, DevPassword);\n\n        var user2 = new User\n        {\n            Username = \"user2\",\n            Email = \"user2@local\",\n            RoleId = userRoleId,\n        };\n        user2.PasswordHash = hasher.HashPassword(user2, DevPassword);\n\n        await db.Users.AddRangeAsync(admin, user, user2);\n    }\n\n    private static async Task SeedSystemItemsAsync(AppDbContext db)\n    {\n        if (await db.DailyItems.AnyAsync(item => item.IsSystem))\n        {\n            return;\n        }\n\n        var items = new[]\n        {\n            new DailyItem { Name = \"Milk\", Unit = \"L\", DefaultPrice = 60m, IsSystem = true },\n            new DailyItem { Name = \"Bread\", Unit = \"pcs\", DefaultPrice = 30m, IsSystem = true },\n            new DailyItem { Name = \"Petrol\", Unit = \"L\", DefaultPrice = 105m, IsSystem = true },\n            new DailyItem { Name = \"Eggs\", Unit = \"pcs\", DefaultPrice = 7m, IsSystem = true },\n            new DailyItem { Name = \"Vegetables\", Unit = \"kg\", DefaultPrice = 50m, IsSystem = true },\n        };\n\n        await db.DailyItems.AddRangeAsync(items);\n    }\n\n    private static async Task PromoteLegacyUserItemsAsync(AppDbContext db)\n    {\n        var adminIds = await db.Users\n            .Where(user => user.Role.Name == \"Admin\")\n            .Select(user => user.Id)\n            .ToListAsync();\n\n        if (adminIds.Count == 0)\n        {\n            return;\n        }\n\n        var legacyItems = await db.DailyItems\n            .Where(item => !item.IsSystem\n                && item.OwnerUserId != null\n                && adminIds.Contains(item.OwnerUserId.Value))\n            .ToListAsync();\n\n        foreach (var item in legacyItems)\n        {\n            item.IsSystem = true;\n            item.OwnerUserId = null;\n        }\n    }\n}\nEOF"
+			]
+		},
+		{
+			"label": "add-identity-core-package",
+			"type": "shell",
+			"command": "perl",
+			"args": [
+				"-0pi",
+				"-e",
+				"s#<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"9\\.0\\.16\" />#<PackageReference Include=\"Microsoft.EntityFrameworkCore.Sqlite\" Version=\"9.0.16\" />\n    <PackageReference Include=\"Microsoft.Extensions.Identity.Core\" Version=\"9.0.7\" />#",
+				"/Users/niranjan/Documents/Debug/DailyTrackerService/src/DailyTracker.Infrastructure/DailyTracker.Infrastructure.csproj"
+			]
+		},
+		{
+			"label": "verify-and-build-seeder-final",
+			"type": "shell",
+			"command": "sh",
+			"args": [
+				"-lc",
+				"sed -n '1,260p' src/DailyTracker.Infrastructure/Persistence/DbSeeder.cs && printf '\\n---CSProj---\\n' && sed -n '1,120p' src/DailyTracker.Infrastructure/DailyTracker.Infrastructure.csproj && printf '\\n---BUILD---\\n' && dotnet build src/DailyTracker.Api/DailyTracker.Api.csproj"
+			]
+		}
+	]
 }
